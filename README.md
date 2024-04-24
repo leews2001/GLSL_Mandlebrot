@@ -78,7 +78,7 @@ Navigating the Mandelbrot set at very high scale presents another unique challen
 
 Look at the picture below, observe the visual artifacts.
 
-|<img src="/img/prec_loss_01.png" width="360">|<img src="/img/prec_loss_03.png" width="360">|
+|<img src="img/prec_loss_01.png" width="360">|<img src="/img/prec_loss_03.png" width="360">|
 |:--:|:--:| 
 |*<p style="width: 360px">'Chromosome' artifacts (hint: idiograms) at scale $1e13$, 2x32 bit precision, somewhere near $(-1.5+ 0i)$.</p>*|*<p style="width: 360px">'Mosaic' artifacts at scale $1e13$, 2x32 bit precision, somewhere near $(0.5+ 0.5i)$.</p>*|
 

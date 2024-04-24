@@ -351,7 +351,7 @@ int main()
             glViewport(0, 0, scrn_wd, scrn_ht);
             {
                 gp_upscale_shader->use_shader(); 
-                glBindTexture(GL_TEXTURE_2D, g_mdb_texture); // Bind Mandelbrot texture
+                glBindTexture(GL_TEXTURE_2D, g_mdb_texture); // Bind Mandelbrot texture to read from
                 glBindVertexArray(quadVAO);
                 glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
                 glBindTexture(GL_TEXTURE_2D, 0);

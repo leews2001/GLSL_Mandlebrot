@@ -27,27 +27,27 @@ A picture (or video these days) is worth a thousands words. Let's just watch thi
 |:--:|
 |*The Hardest Trip - Mandelbrot Fractal Zoom by Maths Town*|
 
-In this captivating video, witness an hour-long zoom into a 2D map created by a deceptively simple equation:
+In this captivating video, witness an hour-long zoom into a 2d map created by a deceptively simple equation:
 ```math
 z_{n+1} = z_{n}^2 + c
 ```
 Here's the breakdown:
-- $z_n$ represents a complex number at $$n$$-th iteration.
+- $z_n$ represents a complex number at $n$-th iteration.
 - $c$ is a constant complex number (think of it as a 2d vector), often the coordinates being tested.
 
 Yes, but how you get the picture seen in the video? Well, Well, the color of each point in the picture tells its own tale— the number of iterations it undergoes before spiraling into infinity. If it manages to evade this fate, it earns a place in the 'black' hole.
 
-So how do we know if the point will spiral into infinity? We just have to check that $$|z{n}|$$ has became very large, then we bail out from the calculation loop. If at the end of the preset maximum iterations, $$|z{n}|$$ is still not large, we will assume it is in the 'black' hole.
+So how do we know if the point will spiral into infinity? We just have to check that $\mid z_{n}\mid$ has became very large, then we bail out from the calculation loop. If at the end of the preset maximum iterations, $\mid z_{n}\mid$ is still not large, we will assume it is in the 'black' hole.
 
 |<img src="img/mdb_orbit.png" width="360">| 
 |:--:| 
 |*<p style="width: 360px">Iterating on 3 different (red, green, blue) points on the complex plane. Notice how the green point takes off when it falls outside the circle (radius = 2). Image from [blog post by stc](https://blogs.kent.ac.uk/onetwomany/2020/04/24/deterministic-vs-predictable-the-mandelbrot-set/)</p>*| 
 
 
-But what is the threshold for $$|z{n}|$$ being large? Well, it's been mathematically confirmed that, if at any moment, $$|z_{n}|>2$$, then $$|z_{n+1}|> |z_{n}|$$. That is, once the point's distance from the origin is greater than 2, then this distance is always going to increase in every subsequent iteration- it's going infinity and beyond. So, we simply have to check:
+But what is the threshold for $\mid z_{n}\mid$ being large? Well, it's been mathematically confirmed that, if at any moment, $\mid z_{n}\mid >2$, then $\mid z_{n+1}\mid > \mid z_{n}\mid $. That is, once the point's distance from the origin is greater than 2, then this distance is always going to increase in every subsequent iteration- it's going infinity and beyond. So, we simply have to check:
 
 ```math
-|z_{n}|>2
+\mid z_{n}\mid >2
 ```
 Really, that is all. Seems like a ruse, no? A surprisingly simple equation giving us such complexity. That's the captivating beauty of fractals, and Mandelbrot is just one intriguing example.
 
@@ -76,41 +76,41 @@ Navigating the Mandelbrot set at very high scale presents another unique challen
 
 ### Data Precision and Rendering Limitations
 
-Look at the picture below, observe the artifacts.
+Look at the picture below, observe the visual artifacts.
 
 |<img src="img/prec_loss_01.png" width="360">|<img src="img/prec_loss_03.png" width="360">|
 |:--:|:--:| 
-|*<p style="width: 360px">'Chromosome' artifacts at scale 1e13, 2x32 bit precision, somewhere near (-1.5+ 0i).</p>*|*<p style="width: 360px">'Blocky' artifacts at scale 1e13, 2x32 bit precision, somewhere near (0.5+ 0.5i).</p>*|
+|*<p style="width: 360px">'Chromosome' artifacts (hint: idiograms) at scale $1e13$, 2x32 bit precision, somewhere near $(-1.5+ 0i)$.</p>*|*<p style="width: 360px">'Mosaic' artifacts at scale $1e13$, 2x32 bit precision, somewhere near $(0.5+ 0.5i)$.</p>*|
 
 At high zoom scales, visual artifacts appears on the Mandelbrot due to limitations in arithmetic precision, 2x32 bit in our example. As we zoom deeper into the fractal, the numbers involved become incredibly small, and the differences between neighboring points become increasingly subtle. 
 
-Suppose we're zooming into a region of the Mandelbrot set where the coordinates are very small, let's say around (-0.75, 0.1), and we're calculating the iterations of the Mandelbrot function using 32-bit floats. 
+Suppose we're zooming into a region of the Mandelbrot set where the coordinates are very small, let's say around some point at $z=(-1.5+0.1i)$, and we're calculating the iterations of the Mandelbrot function using 32-bit floats. 
 
-At a certain zoom level, the difference between neighboring points might be on the order of 1e-8 or smaller. However, with 32-bit floats, we only have precision up to 6 digits. This means that the precision of our calculations is insufficient to accurately distinguish between points at such a small scale. (Indeed, if we use 32bit precision instead of 2x32 bit, the artifacts will be visible around zoom scale 1e7.)
+At a certain zoom level, the difference between neighboring points might be on the order of $1e-8$ or smaller. However, with 32-bit floats, we only have precision up to 6 digits. This means that the precision of our calculations is insufficient to accurately distinguish between points at such a small scale. (Indeed, if we use 32bit precision instead of 2x32 bit, the artifacts will be visible around zoom scale $1e7$.)
 
-So to the rendering algorithm, it is as if we are asking it to calculate the same point repeatedly, thus the 'blocky' artifacts.
+So to the rendering algorithm, it is as if we are asking it to calculate the same point repeatedly, thus the 'Mosaic' artifacts.
 
-There is more to learn from these artifacts. You might already be wondering why 'Chromosome' artifacts near z=(-1.5 +0i)? This is indeed as expected. What you are witnessing is the varying precision of the floating point representation. The precision of a number varies depending on its distance from zero. Numbers closer to zero have higher precision, meaning they can represent smaller differences between adjacent values. As the magnitude of a number increases, its precision decreases, and it can only represent larger intervals between adjacent values.
+There is more to learn from these artifacts. You might already be wondering why 'Chromosome' artifacts near $z=(-1.5 +0i)$? This is indeed as expected. What you are witnessing is the varying precision of the floating point representation. The precision of a number varies depending on its distance from zero. Numbers closer to zero have higher precision, meaning they can represent smaller differences between adjacent values. As the magnitude of a number increases, its precision decreases, and it can only represent larger intervals between adjacent values.
 
-So, near z=(-1.5 +0i), we can expect our floating point to have better precision in the *y* ( imaginary) axis than the *x* (real) axis. Hence, flattening the blocks into chromosome map.
+So, near $z=(-1.5 +0i)$, we can expect our floating point to have better precision in the $y$ ( imaginary) axis than the $x$ (real) axis. Hence, flattening the moasics into chromosome map.
 
 Now, if we fix those artifacts using 2x64 bit calculation, we get beautiful maps again.
 
 |<img src="img/prec_loss_02.png" width="360">|<img src="img/prec_loss_04.png" width="360">|
 |:--:|:--:|
-|*<p style="width: 360px">At scale 1e13, 2x64 bit precision, somewhere near (-1.5+ 0i).</p>*|*<p style="width: 360px">At scale 1e13, 2x64 bit precision, somewhere near (0.5+ 0.5i).</p>*|
+|*<p style="width: 360px">At scale $1e13$, 2x64 bit precision, somewhere near $(-1.5+ 0i)$.</p>*|*<p style="width: 360px">At scale $1e13$, 2x64 bit precision, somewhere near $(0.5+ 0.5i)$.</p>*|
 
 ### Transversing Limitations.
-Similarly, at high zoom scale, we will be transversing the map in very small steps, e.g. 1e-15.
-Suppose we want to tranverse horizontally with a tiny step $$\delta_{step}$$, so we get the new horizontal position as follows:
+Similarly, at high zoom scale, we will be transversing the map in very small steps, e.g. $1e-15$.
+Suppose we want to tranverse horizontally with a tiny step $\delta_{step}$, so we get the new horizontal position as follows:
 
 ```math
-x_{1}_ = x_{0}_+ \delta_{step}
+x_{1} = x_{0}+ \delta_{step}
 ```
 
 But, we will find that, the new position remains the same, because the difference falls outside what the floating representation can take, dropping them and only retaining the sigificant decimals.
 ```math
-x_{1}_ = x_{0}_
+x_{1} = x_{0}
 ```
 
 Hence, our user will be crippled at high zoom scale, where he can only zoom-in and -out, but not transversing the map.
@@ -126,7 +126,7 @@ For realtime interactivity, good quality rendering (more iterations!) at high zo
 
 |<img src="img/iter_01.png" width="360">|<img src="img/iter_02.png" width="360">|
 |:--:|:--:|
-|*<p style="width: 360px">With max iterations at 100, so many details are lost, as many points are still considered to be in orbit, $$|z|< 2$$, after 100 iterations.</p>*|*<p style="width: 360px">With max iterations at 1000, the details are back.</p>*|
+|*<p style="width: 360px">With max iterations at 100, so many details are lost, as many points are still considered to be in orbit, $\mid z\mid< 2$, after 100 iterations.</p>*|*<p style="width: 360px">With max iterations at 1000, the details are back.</p>*|
 
 
 ## Some Tricks
@@ -198,7 +198,7 @@ void create_subres_texture(
 }
 ```
 
-In the render loop, w
+In the main render loop, whenever there is a view or camera update, the Mandelbrot shader to write to the FBO, then the Upscaling shader will read from the FBO and interpolate onto the default render buffer for display.
 ```cpp
     if (b_update_cam || b_update_zoom) {
         // There is camera motion, view is being changed,
@@ -216,12 +216,13 @@ In the render loop, w
 
         // Unbind the framebuffer to render to the default framebuffer
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        
         // Change the viewport to the window size
         glViewport(0, 0, scrn_wd, scrn_ht);
 
         // use the upscaling shader to interpolate the FBO to window size
         gp_upscale_shader->use_shader();
+        // Bind Mandelbrot texture to read from
+        glBindTexture(GL_TEXTURE_2D, g_mdb_texture); 
         ...
     }
 ```
@@ -277,13 +278,14 @@ Use the following keys to explore the Mandelbrot Map:
 - **E**: Zoom out
 - **R**: Reset view
 - **M**: Toggle precision between '*dS*' (2x32 bit) and '*dD*' (2x64 bit)
-- **Esc**: Quit
+- **0**: Set max iteration to 100
 - **1**: Set max iteration to 1000
 - **2**: Set max iteration to 2000
 - **3**: Set max iteration to 4000
 - **4**: Set max iteration to 8000
 - **5**: Set max iteration to 12000
-- **0**: Set max iteration to 100
+- **Esc**: Quit
+
 
 Status of the framerate, max iteration, and precision mode is displayed in the windows title bar.
 
@@ -291,11 +293,11 @@ Status of the framerate, max iteration, and precision mode is displayed in the w
 
 |<img src="img/mdb_01.png" width="360">|<img src="img/mdb_02_ds_loss.png" width="360">|
 |:--:|:--:| 
-|*<p style="width: 360px">Mandelbrot, bird's eye view. The red crosshair shows where you will be diving into. Rendering at 2x32bit precision, 1000 iterations. Notice the rendering is programmatically capped at about 60fps.</p>*|*<p style="width: 360px">Zooming to one of the islands on Re(z)<-1. With double-float (2x32 bit) arithmetic, we begain to see precision errors at scale 1e12.</p>*|
+|*<p style="width: 360px">Mandelbrot, bird's eye view. The red crosshair shows where you will be diving into. Rendering at 2x32bit precision, 1000 iterations. Notice the rendering is programmatically capped at about 60fps.</p>*|*<p style="width: 360px">Zooming to one of the islands on $Re(z)<-1$. With double-float (2x32 bit) arithmetic, we begain to see precision errors at scale 1e12.</p>*|
 
 |<img src="img/mdb_03_dd.png" width="360">|<img src="img/mdb_03_dd_loss.png" width="360">|
 |:--:|:--:|
-|*<p style="width: 360px">Switching to double-double (2x64 bit), we can nice rendering again</p>*|*<p style="width: 360px">At scale 1e22, the artifacts return. We have to use arbitrary precision maths to go beyond here.</p>*|
+|*<p style="width: 360px">Switching to double-double (2x64 bit), we can nice rendering again</p>*|*<p style="width: 360px">At scale $1e22$, the artifacts return. We have to use arbitrary precision maths to go beyond here.</p>*|
 
 ## Closing Thoughts
 

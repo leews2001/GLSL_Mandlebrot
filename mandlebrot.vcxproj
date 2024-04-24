@@ -112,7 +112,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Developer\Libraries\glm-0.9.9.8\glm</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>incl;glad\include;C:\Developer\Libraries\glm-0.9.9.8\glm</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
@@ -130,7 +130,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Developer\Libraries\glm-0.9.9.8\glm</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>incl;glad\include;C:\Developer\Libraries\glm-0.9.9.8\glm</AdditionalIncludeDirectories>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
       <LanguageStandard>stdcpp20</LanguageStandard>
@@ -144,16 +144,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\Libraries\glad\src\glad.c" />
-    <ClCompile Include="Input.cpp" />
+    <ClCompile Include="glad\src\glad.c" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="shader.cpp" />
+    <ClCompile Include="src\Input.cpp" />
+    <ClCompile Include="src\shader.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="glad\include\glad\glad.h" />
     <ClInclude Include="incl\deuxdouble.h" />
     <ClInclude Include="incl\fps.h" />
-    <ClInclude Include="Input.h" />
-    <ClInclude Include="shader.h" />
+    <ClInclude Include="incl\Input.h" />
+    <ClInclude Include="incl\shader.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="README.md" />

@@ -5,13 +5,13 @@ Now, as I reminisce, a familiar eagerness stirring within me. A longing to dive 
 
 Demoscene, you ask? Check out it's wiki-page [here](https://en.wikipedia.org/wiki/Demoscene). 
 
-|<img src="img/demo01.png" height="200">|<img src="img/demo03.png" height="200">|
+|<img src="/img/demo01.png" height="200">|<img src="/img/demo03.png" height="200">|
 |:--:|:--:| 
 |*Demoscene... if you know, you know.*|*Mandelbrot Voxel from Future Crew's 1992 demo, 'Panic'.*|
  
  Some Mandelbrot generated on the archaic CGA graphic card:
 
-|<img src="img/mdb_cga.jpg"  height="200">|<img src="img/CGA_Partial_Mandelbrot_Set.png"  height="200">|
+|<img src="/img/mdb_cga.jpg" height="200">|<img src="/img/CGA_Partial_Mandelbrot_Set.png"  height="200">|
 |:--:|:--:|
 |*from Vintage Computer Federation Forums*|*from wikipedia.*|
 
@@ -39,7 +39,7 @@ Yes, but how you get the picture seen in the video? Well, Well, the color of eac
 
 So how do we know if the point will spiral into infinity? We just have to check that $\mid z_{n}\mid$ has became very large, then we bail out from the calculation loop. If at the end of the preset maximum iterations, $\mid z_{n}\mid$ is still not large, we will assume it is in the 'black' hole.
 
-|<img src="img/mdb_orbit.png" width="360">| 
+|<img src="/img/mdb_orbit.png" width="360">| 
 |:--:| 
 |*<p style="width: 360px">Iterating on 3 different (red, green, blue) points on the complex plane. Notice how the green point takes off when it falls outside the circle (radius = 2). Image from [blog post by stc](https://blogs.kent.ac.uk/onetwomany/2020/04/24/deterministic-vs-predictable-the-mandelbrot-set/)</p>*| 
 
@@ -78,7 +78,7 @@ Navigating the Mandelbrot set at very high scale presents another unique challen
 
 Look at the picture below, observe the visual artifacts.
 
-|<img src="img/prec_loss_01.png" width="360">|<img src="img/prec_loss_03.png" width="360">|
+|<img src="/img/prec_loss_01.png" width="360">|<img src="/img/prec_loss_03.png" width="360">|
 |:--:|:--:| 
 |*<p style="width: 360px">'Chromosome' artifacts (hint: idiograms) at scale $1e13$, 2x32 bit precision, somewhere near $(-1.5+ 0i)$.</p>*|*<p style="width: 360px">'Mosaic' artifacts at scale $1e13$, 2x32 bit precision, somewhere near $(0.5+ 0.5i)$.</p>*|
 
@@ -96,7 +96,7 @@ So, near $z=(-1.5 +0i)$, we can expect our floating point to have better precisi
 
 Now, if we fix those artifacts using 2x64 bit calculation, we get beautiful maps again.
 
-|<img src="img/prec_loss_02.png" width="360">|<img src="img/prec_loss_04.png" width="360">|
+|<img src="/img/prec_loss_02.png" width="360">|<img src="/img/prec_loss_04.png" width="360">|
 |:--:|:--:|
 |*<p style="width: 360px">At scale $1e13$, 2x64 bit precision, somewhere near $(-1.5+ 0i)$.</p>*|*<p style="width: 360px">At scale $1e13$, 2x64 bit precision, somewhere near $(0.5+ 0.5i)$.</p>*|
 
@@ -124,7 +124,7 @@ At lower zoom levels, where the view encompasses a wider area of the Mandelbrot,
 
 For realtime interactivity, good quality rendering (more iterations!) at high zoom scale is  going to be very challenging.
 
-|<img src="img/iter_01.png" width="360">|<img src="img/iter_02.png" width="360">|
+|<img src="/img/iter_01.png" width="360">|<img src="/img/iter_02.png" width="360">|
 |:--:|:--:|
 |*<p style="width: 360px">With max iterations at 100, so many details are lost, as many points are still considered to be in orbit, $\mid z\mid< 2$, after 100 iterations.</p>*|*<p style="width: 360px">With max iterations at 1000, the details are back.</p>*|
 
@@ -291,11 +291,11 @@ Status of the framerate, max iteration, and precision mode is displayed in the w
 
 ## Some Screenshots
 
-|<img src="img/mdb_01.png" width="360">|<img src="img/mdb_02_ds_loss.png" width="360">|
+|<img src="/img/mdb_01.png" width="360">|<img src="/img/mdb_02_ds_loss.png" width="360">|
 |:--:|:--:| 
 |*<p style="width: 360px">Mandelbrot, bird's eye view. The red crosshair shows where you will be diving into. Rendering at 2x32bit precision, 1000 iterations. Notice the rendering is programmatically capped at about 60fps.</p>*|*<p style="width: 360px">Zooming to one of the islands on $Re(z)<-1$. With double-float (2x32 bit) arithmetic, we begain to see precision errors at scale 1e12.</p>*|
 
-|<img src="img/mdb_03_dd.png" width="360">|<img src="img/mdb_03_dd_loss.png" width="360">|
+|<img src="/img/mdb_03_dd.png" width="360">|<img src="/img/mdb_03_dd_loss.png" width="360">|
 |:--:|:--:|
 |*<p style="width: 360px">Switching to double-double (2x64 bit), we can nice rendering again</p>*|*<p style="width: 360px">At scale $1e22$, the artifacts return. We have to use arbitrary precision maths to go beyond here.</p>*|
 
@@ -316,7 +316,7 @@ So, that's that. Until next time, drink, debug, and laugh!
 
 One more thing, you can turn this into Julia set explorer with just one (or two?) line change in the shader codes. You like to try? 
 
-|<img src="img/julia_01.png" width="360">|<img src="img/julia_02.png" width="360">|
+|<img src="/img/julia_01.png" width="360">|<img src="/img/julia_02.png" width="360">|
 |:--:|:--:|
 |*<p style="width: 360px">A Julia set at z=(0.28 + 0.008i)</p>*|*<p style="width: 360px">Another Julia set at z=(-0.70176 + 0.3842i)</p>*|
 

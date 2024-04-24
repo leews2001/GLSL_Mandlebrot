@@ -80,7 +80,7 @@ Look at the picture below, observe the visual artifacts.
 
 |<img src="img/prec_loss_01.png" width="360">|<img src="img/prec_loss_03.png" width="360">|
 |:-:|:-:| 
-|*<p style="width: 360 px">'Chromosome' artifacts (hint: idiograms) at scale 1e13, 2x32 bit precision, somewhere near (-1.5+ 0i).</p>*|*<p style="width: 360 px">'Mosaic' artifacts at scale 1e13, 2x32 bit precision, somewhere near (0.5+ 0.5i).</p>*|
+|*<p style="width: 360 px">'Chromosome' artifacts  at scale 1e13, 2x32 bit precision, near (-1.5+ 0i).</p>*|*<p style="width: 360 px">'Mosaic' artifacts at scale 1e13, 2x32 bit precision, near (0.5+ 0.5i).</p>*|
 
 At high zoom scales, visual artifacts appears on the Mandelbrot due to limitations in arithmetic precision, 2x32 bit in our example. As we zoom deeper into the fractal, the numbers involved become incredibly small, and the differences between neighboring points become increasingly subtle. 
 

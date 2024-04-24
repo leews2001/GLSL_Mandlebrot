@@ -80,7 +80,7 @@ Look at the picture below, observe the visual artifacts.
 
 |<img src="img/prec_loss_01.png" width="360">|<img src="img/prec_loss_03.png" width="360">|
 |:-:|:-:| 
-|*<p style="width: 360 px">'Chromosome' artifacts  at scale 1e13, 2x32 bit precision, near (-1.5+ 0i).</p>*|*<p style="width: 360 px">'Mosaic' artifacts at scale 1e13, 2x32 bit precision, near (0.5+ 0.5i).</p>*|
+|*<p style="width: 360 px">'Chromosome' artifacts at scale 1e13, 2x32 bit precision, near (-1.5+ 0i).</p>*|*<p style="width: 360 px">'Mosaic' artifacts at scale 1e13, 2x32 bit precision, near (0.5+ 0.5i).</p>*|
 
 At high zoom scales, visual artifacts appears on the Mandelbrot due to limitations in arithmetic precision, 2x32 bit in our example. As we zoom deeper into the fractal, the numbers involved become incredibly small, and the differences between neighboring points become increasingly subtle. 
 
@@ -98,7 +98,7 @@ Now, if we fix those artifacts using 2x64 bit calculation, we get beautiful maps
 
 |<img src="/img/prec_loss_02.png" width="360">|<img src="/img/prec_loss_04.png" width="360">|
 |:-:|:-:| 
-|*<p style="width: 360px">At scale 1e13, 2x64 bit precision, somewhere near (-1.5+ 0i).</p>*|*<p style="width: 360px">At scale 1e13, 2x64 bit precision, somewhere near (0.5+ 0.5i).</p>*|
+|*<p style="width: 360px">At scale 1e13, 2x64 bit precision, near (-1.5+ 0i).</p>*|*<p style="width: 360px">At scale 1e13, 2x64 bit precision, near (0.5+ 0.5i).</p>*|
 
 ### Transversing Limitations.
 Similarly, at high zoom scale, we will be transversing the map in very small steps, e.g. $1e-15$.
@@ -292,11 +292,11 @@ Status of the framerate, max iteration, and precision mode is displayed in the w
 
 |<img src="img/mdb_01.png" width="360">|<img src="img/mdb_02_ds_loss.png" width="360">|
 |:-:|:-:| 
-|<p style="width: 360 px">Mandelbrot, bird's eye view. Rendering at 2x32bit precision, 1000 iterations. Notice the rendering is programmatically capped at about 60fps.</p> | <p style="width: 360 px">Zooming to one of the islands on Re(z)<-1. With double-float (2x32 bit) arithmetic, we begain to see precision errors at scale 1e12.</p>|
+|<p style="width: 360 px">Mandelbrot, bird's eye view. 2x32bit precision, 1000 iterations.</p> | <p style="width: 360 px">Zoom to some islands on Re(z)<-1. With 2x32 bit compute, precision errors appears at scale 1e12.</p>|
 
 |<img src="img/mdb03dd.png" width="360">|<img src="img/mdb03ddloss.png" width="360">|
 |:-:|:-:|
-|*<p style="width: 360px">Switching to double-double (2x64 bit), we can nice rendering again</p>*|*<p style="width: 360px">At scale 1e22, the artifacts return. We have to use arbitrary precision maths to go beyond here.</p>*|
+|*<p style="width: 360px">Switch to 2x64 bit and have nice rendering again</p>*|*<p style="width: 360px">At scale 1e22, artifacts return. Arbitrary precision maths is needed to go beyond.</p>*|
 
 ## Closing Thoughts
 

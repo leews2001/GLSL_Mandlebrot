@@ -295,8 +295,8 @@ Status of the framerate, max iteration, and precision mode is displayed in the w
 |<p style="width: 360 px">Mandelbrot, bird's eye view. The red crosshair shows where you will be diving into. Rendering at 2x32bit precision, 1000 iterations. Notice the rendering is programmatically capped at about 60fps.</p> | <p style="width: 360 px">Zooming to one of the islands on $Re(z)<-1$. With double-float (2x32 bit) arithmetic, we begain to see precision errors at scale 1e12.</p>|
 
 
-<img src="img/mdb_03_dd.png" width="360"><img src="img/mdb_03_dd_loss.png" width="360">
-|:--:|:--:|
+|<img src="img/mdb_03_dd.png" width="360">|<img src="img/mdb_03_dd_loss.png" width="360">|
+|:-:|:-:|
 |<p style="width: 360 px">Switching to double-double (2x64 bit), we can nice rendering again</p>|<p style="width: 360 px">At scale $1e22$, the artifacts return. We have to use arbitrary precision maths to go beyond here.</p>|
 
 ## Closing Thoughts

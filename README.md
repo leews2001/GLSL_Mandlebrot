@@ -297,7 +297,7 @@ Status of the framerate, max iteration, and precision mode is displayed in the w
 
 <img src="img/mdb_03_dd.png" width="360">|<img src="img/mdb_03_dd_loss.png" width="360">
 :-:|:-:
-<p style="width: 360 px">Switching to double-double (2x64 bit), we can nice rendering again</p> | <p style="width: 360 px">At scale $1e22$, the artifacts return. We have to use arbitrary precision maths to go beyond here.</p>
+Switching to double-double (2x64 bit), we can nice rendering again| At scale $1e22$, the artifacts return. We have to use arbitrary precision maths to go beyond here.
 
 ## Closing Thoughts
 

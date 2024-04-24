@@ -56,12 +56,14 @@ void create_subres_texture( const int wd_, const int ht_, const int factor_, GLu
 void double_to_ds(double dval_, float& rout_val_, float& rout_err_);
 
 //-----------------------------------------------------------
+Input g_input;
+
 Shader* gp_mdb_shader = nullptr;
 Shader* gp_hud_shader = nullptr;
 Shader* gp_upscale_shader = nullptr;
 
-int scrn_wd{ 1080 };
-int scrn_ht{ 1080 };
+int g_scrn_wd{ 1080 };
+int g_scrn_ht{ 1080 };
 
 GLuint g_mdb_texture;
 
@@ -91,7 +93,7 @@ int main()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    GLFWwindow* window = glfwCreateWindow(scrn_wd, scrn_ht, "Mandelbrot", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(g_scrn_wd, g_scrn_ht, "Mandelbrot", NULL, NULL);
 
     if (window == nullptr) {
         cout << "Failed to create GLFW window!\n";
@@ -110,7 +112,6 @@ int main()
 
     //-----------------------------------------------------------
     // Set the user pointer to pass the struct to the callback function
-    Input g_input;
     glfwSetWindowUserPointer(window, &g_input);
 
     //----------------------------------------------------------- 
@@ -145,7 +146,7 @@ int main()
 
 
     // create sub-resolution texture for rendering
-    create_subres_texture( scrn_wd, scrn_ht, SUB_RENDER_FACTOR, g_mdb_texture);
+    create_subres_texture( g_scrn_wd, g_scrn_ht, SUB_RENDER_FACTOR, g_mdb_texture);
 
     // Set up Frame buffer object for mandelbrot shader to render to
     unsigned int mandelbrotFBO;
@@ -203,13 +204,13 @@ int main()
              
             // Bind the framebuffer object (FBO) to render to
             glBindFramebuffer(GL_FRAMEBUFFER, mandelbrotFBO);
-            glViewport(0, 0, scrn_wd / SUB_RENDER_FACTOR, scrn_ht / SUB_RENDER_FACTOR);
+            glViewport(0, 0, g_scrn_wd / SUB_RENDER_FACTOR, g_scrn_ht / SUB_RENDER_FACTOR);
             
             render_mandelbrot();
   
             // Unbind the framebuffer to render to the default framebuffer
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
-            glViewport(0, 0, scrn_wd, scrn_ht);
+            glViewport(0, 0, g_scrn_wd, g_scrn_ht);
 
             upscale_FBO();
             render_crosshair(); 
@@ -222,7 +223,7 @@ int main()
             if (!_b_idle) {
                 // Unbind the framebuffer to render to the default framebuffer
                 glBindFramebuffer(GL_FRAMEBUFFER, 0);
-                glViewport(0, 0, scrn_wd, scrn_ht);
+                glViewport(0, 0, g_scrn_wd, g_scrn_ht);
 
                 render_mandelbrot();
                 render_crosshair();
@@ -549,8 +550,8 @@ void window_refresh_callback( GLFWwindow* window)
  */
 void win_resize_callback(GLFWwindow* window, int w, int h)
 { 
-    scrn_wd = w;
-    scrn_ht = h;
+    g_scrn_wd = w;
+    g_scrn_ht = h;
 
     glViewport(0, 0, w, h);
 
@@ -558,8 +559,8 @@ void win_resize_callback(GLFWwindow* window, int w, int h)
     glBindTexture(GL_TEXTURE_2D, g_mdb_texture);
     glTexImage2D(
         GL_TEXTURE_2D, 0, GL_RGBA,
-        scrn_wd / SUB_RENDER_FACTOR,
-        scrn_ht / SUB_RENDER_FACTOR,
+        g_scrn_wd / SUB_RENDER_FACTOR,
+        g_scrn_ht / SUB_RENDER_FACTOR,
         0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -605,10 +606,8 @@ void update_camera(
 
     // camera translation
     double _pan = r_cam_.currentPanningSpeed;
-    if (r_mov_.moveRight) { 
-
+    if (r_mov_.moveRight) {  
         r_cam_.cameraTranslationX += _pan;
-   
     }
     else if (r_mov_.moveLeft) {
      
@@ -630,17 +629,11 @@ void update_camera(
         //printf("       c) A: %.25lf,  %.25lf\n",A, r_cam_.cameraTranslationX);
     }
 
-    if (r_mov_.moveUp) {
- 
-
+    if (r_mov_.moveUp) { 
         r_cam_.cameraTranslationY +=   _pan;
- 
-
     }
     else if (r_mov_.moveDown) {
- 
         r_cam_.cameraTranslationY -=  _pan;
- 
     }
 
     // camera zoom
@@ -655,14 +648,13 @@ void update_camera(
 
     }
     else if (r_mov_.zoomOut) {
-        r_cam_.cameraZoom = r_cam_.cameraZoom * (1 / r_cam_.zoomSpeed); // Update the zoomAmount
+        r_cam_.cameraZoom = r_cam_.cameraZoom  / r_cam_.zoomSpeed; // Update the zoomAmount
 
         if (r_cam_.cameraZoom < 1) {
             r_cam_.cameraZoom = 1;
         }
 
         r_cam_.currentPanningSpeed = r_cam_.basePanningSpeed / r_cam_.cameraZoom; // Update camera panning speed
-        //printf("[pan] %.20lf\n", r_cam_.currentPanningSpeed);
     }
 
     return;

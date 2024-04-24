@@ -124,9 +124,8 @@ At lower zoom levels, where the view encompasses a wider area of the Mandelbrot,
 
 For realtime interactivity, good quality rendering (more iterations!) at high zoom scale is  going to be very challenging.
 
-|<img src="/img/iter_01.png" width="360">|<img src="/img/iter_02.png" width="360">|
-|:--:|:--:|
-|*<p style="width: 360px">With max iterations at 100, so many details are lost, as many points are still considered to be in orbit, $\mid z\mid< 2$, after 100 iterations.</p>*|*<p style="width: 360px">With max iterations at 1000, the details are back.</p>*|
+|<img src="img/iter_01.png" width="360">|<img src="img/iter_02.png" width="360">|
+|*<p style="width: 360 px">With max iterations at 100, so many details are lost, as many points are still considered to be in orbit, $\mid z\mid< 2$, after 100 iterations.</p>*|*<p style="width: 360 px">With max iterations at 1000, the details are back.</p>*|
 
 
 ## Some Tricks
@@ -291,11 +290,11 @@ Status of the framerate, max iteration, and precision mode is displayed in the w
 
 ## Some Screenshots
 
-|<img src="/img/mdb_01.png" width="360">|<img src="/img/mdb_02_ds_loss.png" width="360">|
+|<img src="img/mdb_01.png" width="360">|<img src="img/mdb_02_ds_loss.png" width="360">|
 |:--:|:--:| 
 |*<p style="width: 360px">Mandelbrot, bird's eye view. The red crosshair shows where you will be diving into. Rendering at 2x32bit precision, 1000 iterations. Notice the rendering is programmatically capped at about 60fps.</p>*|*<p style="width: 360px">Zooming to one of the islands on $Re(z)<-1$. With double-float (2x32 bit) arithmetic, we begain to see precision errors at scale 1e12.</p>*|
-
-|<img src="/img/mdb_03_dd.png" width="360">|<img src="/img/mdb_03_dd_loss.png" width="360">|
+.
+|<img src="img/mdb_03_dd.png" width="360">|<img src="/img/mdb_03_dd_loss.png" width="360">|
 |:--:|:--:|
 |*<p style="width: 360px">Switching to double-double (2x64 bit), we can nice rendering again</p>*|*<p style="width: 360px">At scale $1e22$, the artifacts return. We have to use arbitrary precision maths to go beyond here.</p>*|
 
@@ -316,7 +315,7 @@ So, that's that. Until next time, drink, debug, and laugh!
 
 One more thing, you can turn this into Julia set explorer with just one (or two?) line change in the shader codes. You like to try? 
 
-|<img src="/img/julia_01.png" width="360">|<img src="/img/julia_02.png" width="360">|
+|<img src="img/julia_01.png" width="360">|<img src="img/julia_02.png" width="360">|
 |:--:|:--:|
 |*<p style="width: 360px">A Julia set at z=(0.28 + 0.008i)</p>*|*<p style="width: 360px">Another Julia set at z=(-0.70176 + 0.3842i)</p>*|
 

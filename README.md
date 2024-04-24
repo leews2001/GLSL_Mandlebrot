@@ -123,9 +123,9 @@ This again, can be solved by using high precision calculation, at the cost of re
 At lower zoom levels, where the view encompasses a wider area of the Mandelbrot, fewer iterations are needed to determine the color of each pixel because the details are less pronounced. However, as we zoom in, the intricate structures of the Mandelbrot become more apparent, requiring more iterations to accurately capture the complexity of the set. As you can see in the video *The Hardest Trip* (see above), the max iterations at at 539 million. 
 
 For realtime interactivity, good quality rendering (more iterations!) at high zoom scale is  going to be very challenging.
-
 |<img src="img/iter_01.png" width="360">|<img src="img/iter_02.png" width="360">|
-|*<p style="width: 360 px">With max iterations at 100, so many details are lost, as many points are still considered to be in orbit, $\mid z\mid< 2$, after 100 iterations.</p>*|*<p style="width: 360 px">With max iterations at 1000, the details are back.</p>*|
+|:--:|:--:| 
+|<p style="width: 360 px">With max iterations at 100, so many details are lost, as many points are still considered to be in orbit, $\mid z\mid< 2$, after 100 iterations.</p> | <p style="width: 360 px">With max iterations at 1000, the details are back.</p>|
 
 
 ## Some Tricks

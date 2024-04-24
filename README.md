@@ -292,7 +292,7 @@ Status of the framerate, max iteration, and precision mode is displayed in the w
 
 |<img src="img/mdb_01.png" width="360">|<img src="img/mdb_02_ds_loss.png" width="360">|
 |:-:|:-:| 
-|<p style="width: 360 px">Mandelbrot, bird's eye view. 2x32bit precision, 1000 iterations.</p> | <p style="width: 360 px">Zoom to some islands on Re(z)<-1. With 2x32 bit compute, precision errors appears at scale 1e12.</p>|
+|<p style="width: 360 px">Mandelbrot, bird's eye view. 2x32bit precision, 1000 iterations.</p> | <p style="width: 360 px">Zoom-in with 2x32 bit compute, precision errors appears at scale 1e12.</p>|
 
 |<img src="img/mdb03dd.png" width="360">|<img src="img/mdb03ddloss.png" width="360">|
 |:-:|:-:|

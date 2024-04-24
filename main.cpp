@@ -21,9 +21,25 @@
 // (screen_width x screen_height) / SUB_RENDER_FACTOR.
 constexpr int SUB_RENDER_FACTOR = 4;
 
+//-----------------------------------------------------------
 // Function prototypes
-void double_to_ds(double dval_, float& rout_val_, float& rout_err_);
+void setup_buffers_for_quad_surface( unsigned int& rio_VAO_, unsigned int& rio_VBO_, unsigned int& rio_EBO_);
+void setup_buffers_for_crosshair(unsigned int& rio_crossVAO_, unsigned int& rio_crossVBO_);
+void setup_FBO(const GLuint texture_, unsigned int& rio_FBO_);
 void init_shaders();
+void render_crosshair();
+
+void update_mbd_shader_params(
+    bool b_update_cam,
+    bool b_update_zoom,
+    bool b_update_mode,
+    int  max_iter_,
+    int  mode_,
+    Input& input_);
+
+void render_mandelbrot();
+void upscale_FBO();
+
 void render_window_title(GLFWwindow* window, float fps_, int max_iter_, int precision_mode_);
 void window_refresh_callback(GLFWwindow* window);
 void win_resize_callback(GLFWwindow* window, int w, int h);
@@ -37,7 +53,9 @@ void update_camera(
 
 void create_subres_texture( const int wd_, const int ht_, const int factor_, GLuint& rout_texture_);
 
-//
+void double_to_ds(double dval_, float& rout_val_, float& rout_err_);
+
+//-----------------------------------------------------------
 Shader* gp_mdb_shader = nullptr;
 Shader* gp_hud_shader = nullptr;
 Shader* gp_upscale_shader = nullptr;
@@ -45,66 +63,16 @@ Shader* gp_upscale_shader = nullptr;
 int scrn_wd{ 1080 };
 int scrn_ht{ 1080 };
 
-unsigned int VAO, VBO, EBO;
-
-
 GLuint g_mdb_texture;
 
+//  buffer indices for quad surface
 unsigned int quadVAO, quadVBO, quadEBO;
 
-// Quad vertices for upscaling
-float quadVertices[] = {
-    // Positions
-    -1.0f,  1.0f,
-    -1.0f, -1.0f,
-     1.0f, -1.0f,
-     1.0f,  1.0f,
-};
+// buffer indices for the crosshair
+unsigned int crossVAO, crossVBO;
 
-// Set up quad indices for upscaling
-unsigned int quadIndices[] = {
-    0, 1, 2,
-    0, 2, 3
-};
-
-
-// Vertices for the crosshair (centered at the origin)
-unsigned int crossVAO, crossVBO, crossEBO;
-
-GLfloat crosshairVertices[] = {
-    // Position      // Color
-    -0.5f, 0.0f, 0.0f,  1.0f, 0.0f, 0.7f, // Left point (red)
-    0.5f, 0.0f, 0.0f,   1.0f, 0.0f, 0.7f, // Right point (red)
-    0.0f, -0.5f, 0.0f,  1.0f, 0.0f, 0.7f, // Bottom point (red)
-    0.0f, 0.5f, 0.0f,   1.0f, 0.0f, 0.7f  // Top point (red)
-};
-
-
-
-
-float vertices[] =
-{
-    //    x      y      z   
-        -1.0f, -1.0f, -0.0f,
-         1.0f,  1.0f, -0.0f,
-        -1.0f,  1.0f, -0.0f,
-         1.0f, -1.0f, -0.0f
-};
-
-unsigned int indices[] =
-{
-    //  2---,1
-    //  | .' |
-    //  0'---3
-        0, 1, 2,
-        0, 3, 1
-};
-
-
+//-----------------------------------------------------------
 using namespace std;
-
- 
-
 int main() 
 {
     // Note: Long Double == Double for MSVC
@@ -114,7 +82,7 @@ int main()
     cout << " double (min): " << std::numeric_limits<double>::min() << endl;
     cout << " double (digits10): " << std::numeric_limits<double>::digits10 << endl;
     cout << " long double (min): " << std::numeric_limits<long double>::min() << endl;
-    cout<<" long double (digits10): " << std::numeric_limits<long double>::digits10 << endl;
+    cout << " long double (digits10): " << std::numeric_limits<long double>::digits10 << endl;
     
 
     // Initialize GLFW
@@ -126,7 +94,6 @@ int main()
     GLFWwindow* window = glfwCreateWindow(scrn_wd, scrn_ht, "Mandelbrot", NULL, NULL);
 
     if (window == nullptr) {
-
         cout << "Failed to create GLFW window!\n";
         glfwTerminate();
         return -1;
@@ -135,93 +102,31 @@ int main()
     glfwMakeContextCurrent(window);
 
 
-    // glad: load all OpenGL function pointers
-    // ---------------------------------------
+    // glad: load all OpenGL function pointers 
     if (!gladLoadGLLoader( (GLADloadproc)glfwGetProcAddress)) {
         cout << "Failed to initialize GLAD" << endl;
         return -1;
     }
 
-
-
+    //-----------------------------------------------------------
     // Set the user pointer to pass the struct to the callback function
     Input g_input;
     glfwSetWindowUserPointer(window, &g_input);
-     
+
+    //----------------------------------------------------------- 
     //-- set callbacks
     glfwSetKeyCallback(window, key_callback);
     glfwSetWindowRefreshCallback(window, window_refresh_callback);
     glfwSetWindowSizeCallback(window, win_resize_callback);
     glfwSetWindowAspectRatio(window, 1, 1);
   
-     
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-    glGenBuffers(1, &EBO);
+    //-----------------------------------------------------------
 
-    glBindVertexArray(VAO);
-
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
-
-    //
-    {
-        glGenVertexArrays(1, &crossVAO);
-        glGenBuffers(1, &crossVBO);
-
-        glBindVertexArray(crossVAO);
-
-        glBindBuffer(GL_ARRAY_BUFFER, crossVBO);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(crosshairVertices), crosshairVertices, GL_STATIC_DRAW);
-
-        // Position attribute
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)0);
-        glEnableVertexAttribArray(0);
-
-        // Color attribute (added)
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
-        glEnableVertexAttribArray(1);
-        // Unbind VBO
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        glBindVertexArray(0);
-    }
-
-    {
-        // Set up vertex array object (VAO) and vertex buffer object (VBO) for quad
-        glGenVertexArrays(1, &quadVAO);
-        glGenBuffers(1, &quadVBO);
-        glGenBuffers(1, &quadEBO);
-
-        glBindVertexArray(quadVAO);
-        glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), quadVertices, GL_STATIC_DRAW);
-
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, quadEBO);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(quadIndices), quadIndices, GL_STATIC_DRAW);
-
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
-
-
-    }
-
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
+    setup_buffers_for_quad_surface( quadVAO, quadVBO, quadEBO);
+    setup_buffers_for_crosshair(crossVAO, crossVBO);
+ 
+    //-----------------------------------------------------------
     init_shaders();
-
-
-   
-
 
     int _max_iter = 1000;
     gp_mdb_shader-> use_shader();
@@ -242,30 +147,18 @@ int main()
     // create sub-resolution texture for rendering
     create_subres_texture( scrn_wd, scrn_ht, SUB_RENDER_FACTOR, g_mdb_texture);
 
-
-    // Set up mandelbrotFBO
+    // Set up Frame buffer object for mandelbrot shader to render to
     unsigned int mandelbrotFBO;
-    glGenFramebuffers(1, &mandelbrotFBO);
-    glBindFramebuffer(GL_FRAMEBUFFER, mandelbrotFBO);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, g_mdb_texture, 0);
+    setup_FBO(g_mdb_texture, mandelbrotFBO);
 
-    // Reset framebuffer binding
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    // Check framebuffer status
-    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-        std::cerr << "Framebuffer is not complete!" << endl;
-    }
-    else {
-        cout << "Framebuffer OK!" << endl;
-        // Unbind framebuffer
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    }
+    //-----------------------------------------------------------
+    
+    // Enable blending, so we can have translucent crosshair
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    //
-
-    //--- 1: turn on v-sync, 0: off
-    glfwSwapInterval(1);
+    glfwSwapInterval(1); //  1: turn on v-sync, 0: off
     
     int _mode = 0;
     bool _b_idle = true;
@@ -273,7 +166,7 @@ int main()
     FPSCounter* _FPS = FPSCounter::getInstance();
     _FPS->start();
 
-    //--- main render loop
+    // main event loop --->
     while (!glfwWindowShouldClose(window)) {
 
         bool b_update_cam{ false };
@@ -300,103 +193,44 @@ int main()
         if (b_update_cam || b_update_zoom || b_update_mode) {
             // there is camera motion, view is being changed and we need to recalculate the Mandelbrot
 
-            printf("[active] zoom:%.4e, fps:%.1f, iteration: %d, mode: %d\n",
-                g_input.m_scrn_cam.cameraZoom, _fps, _max_iter, _mode);
+            //printf("[active] zoom:%.4e, fps:%.1f, iteration: %d, mode: %d\n", g_input.m_scrn_cam.cameraZoom, _fps, _max_iter, _mode);
 
-            gp_mdb_shader-> use_shader();
-            gp_mdb_shader-> set_float("u_MaxIter", float(_max_iter));
-            gp_mdb_shader-> set_int("u_Mode", _mode);
+            gp_mdb_shader->use_shader();
 
+            update_mbd_shader_params(
+                b_update_cam, b_update_zoom, b_update_mode,
+                _max_iter, _mode, g_input);
+             
             // Bind the framebuffer object (FBO) to render to
             glBindFramebuffer(GL_FRAMEBUFFER, mandelbrotFBO);
-
             glViewport(0, 0, scrn_wd / SUB_RENDER_FACTOR, scrn_ht / SUB_RENDER_FACTOR);
-
-
-            glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-
-
-            if (b_update_cam) {
-                float ds_val, ds_err;
-                
-                double_to_ds(g_input.m_scrn_cam.cameraTranslationX, ds_val, ds_err);
-                printf("[CAM] PX: %.20lf =  %.20f, %.20f\n", 
-                    g_input.m_scrn_cam.cameraTranslationX, ds_val, ds_err);
-                gp_mdb_shader->set_vec2("u_ds_CameraPosX", glm::vec2(ds_val, ds_err));
-
-                double_to_ds(g_input.m_scrn_cam.cameraTranslationY, ds_val, ds_err);
-                gp_mdb_shader->set_vec2("u_ds_CameraPosY", glm::vec2(ds_val, ds_err));
-            }
-
-            if (b_update_zoom) {
-
-                double _zoom = 1.0 / g_input.m_scrn_cam.cameraZoom;
-
-                gp_mdb_shader-> set_float("u_CameraZoom", static_cast<float>(_zoom));
-
-            }
-
-            glBindVertexArray(VAO);
-            glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
-            //////////////////
-
-
-
-            ////////////////////////////////
+            
+            render_mandelbrot();
+  
             // Unbind the framebuffer to render to the default framebuffer
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
             glViewport(0, 0, scrn_wd, scrn_ht);
-            {
-                gp_upscale_shader->use_shader(); 
-                glBindTexture(GL_TEXTURE_2D, g_mdb_texture); // Bind Mandelbrot texture to read from
-                glBindVertexArray(quadVAO);
-                glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-                glBindTexture(GL_TEXTURE_2D, 0);
-            }
 
-            {
-                // Render Crosshair
-                gp_hud_shader->use_shader(); 
-                glBindVertexArray(crossVAO);
-                glLineWidth(3.0f);
-                glDrawArrays(GL_LINES, 0, 4);
-            }
-            glBindVertexArray(0);
-
-            _b_idle = false;
-
+            upscale_FBO();
+            render_crosshair(); 
             glfwSwapBuffers(window);
 
-
+            _b_idle = false;
         }
         else {
 
             if (!_b_idle) {
-                //_max_iter = 1000;
-                glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-                gp_mdb_shader-> use_shader();
+                // Unbind the framebuffer to render to the default framebuffer
+                glBindFramebuffer(GL_FRAMEBUFFER, 0);
+                glViewport(0, 0, scrn_wd, scrn_ht);
 
-
-                //printf("[idle] iteration: 1000\n");
-                glBindVertexArray(VAO);
-                glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-                {
-                    // Render Crosshair 
-                    gp_hud_shader->use_shader();
-                    glBindVertexArray(crossVAO);
-                    glLineWidth(3.0f);
-                    glDrawArrays(GL_LINES, 0, 4);
-
-                }
-                glBindVertexArray(0);
+                render_mandelbrot();
+                render_crosshair();
+       
                 _b_idle = true;
             }
             else {
-
+                // copy the front buffer to back
                 GLint _viewport[4];
                 glGetIntegerv(GL_VIEWPORT, _viewport);
 
@@ -415,11 +249,15 @@ int main()
         }
 
         glfwPollEvents();
-    }
 
-    glDeleteVertexArrays(1, &VAO);
-    glDeleteBuffers(1, &VBO);
-    glDeleteBuffers(1, &EBO);
+    } // <--- main event loop
+
+    glDeleteVertexArrays(1, &quadVAO);
+    glDeleteBuffers(1, &quadVBO);
+    glDeleteBuffers(1, &quadEBO);
+
+    glDeleteVertexArrays(1, &crossVAO);
+    glDeleteBuffers(1, &crossVBO);
 
     glfwTerminate();
     return 0;
@@ -428,15 +266,125 @@ int main()
 
 // Function definitions
 
-
-void double_to_ds(double dval_, float& rout_val_, float& rout_err_)
+/**
+ * @brief
+ */
+void setup_buffers_for_quad_surface(
+    unsigned int& rio_quadVAO_, 
+    unsigned int& rio_quadVBO_, 
+    unsigned int& rio_quadEBO_)
 {
-    rout_val_ = (static_cast<float>(dval_));
-    rout_err_ = (static_cast<float>(dval_ - rout_val_));
+
+    // Quad vertices for upscaling
+    const float _quadVertices[] = {
+        // Positions
+        //    x      y  
+           -1.0f,  1.0f,
+           -1.0f, -1.0f,
+            1.0f, -1.0f,
+            1.0f,  1.0f,
+    };
+
+    // Set up quad indices for upscaling
+    const unsigned int _quadIndices[] = {
+        //  0,---3
+        //  | '. |
+        //  1---'2
+            0, 1, 2,
+            0, 2, 3
+    };
+
+    // Set up vertex array object (VAO), vertex and edge buffer object (VBO, EBO) for quad
+    glGenVertexArrays(1, &rio_quadVAO_);
+    glGenBuffers(1, &rio_quadVBO_);
+    glGenBuffers(1, &rio_quadEBO_);
+
+    // Bind VAO
+    glBindVertexArray(rio_quadVAO_);
+    // Bind and allocate memory for vertex buffer (VBO)
+    glBindBuffer(GL_ARRAY_BUFFER, rio_quadVBO_);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(_quadVertices), _quadVertices, GL_STATIC_DRAW);
+    // Bind and allocate memory for edge buffer (EBO)
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, rio_quadEBO_);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof( _quadIndices), _quadIndices, GL_STATIC_DRAW);
+    // Set vertex attribute pointers
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    // Unbind buffers and VAO for safety
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
 
     return;
 }
 
+/**
+ * @brief
+ */
+void setup_buffers_for_crosshair(unsigned int& rio_crossVAO_, unsigned int& rio_crossVBO_)
+{
+
+    const GLfloat crosshairVertices[] = {
+        // Position      // Color
+        -0.5f, 0.0f, 0.0f,  1.0f, 0.0f, 0.7f, // Left point (red)
+        0.5f, 0.0f, 0.0f,   1.0f, 0.0f, 0.7f, // Right point (red)
+        0.0f, -0.5f, 0.0f,  1.0f, 0.0f, 0.7f, // Bottom point (red)
+        0.0f, 0.5f, 0.0f,   1.0f, 0.0f, 0.7f  // Top point (red)
+    };
+
+    glGenVertexArrays(1, &rio_crossVAO_);
+    glGenBuffers(1, &rio_crossVBO_);
+
+    glBindVertexArray(rio_crossVAO_);
+
+    glBindBuffer(GL_ARRAY_BUFFER, rio_crossVBO_);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(crosshairVertices), crosshairVertices, GL_STATIC_DRAW);
+
+    // Position attribute at [0]
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    // Color attribute at [1]
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
+    glEnableVertexAttribArray(1);
+    // Unbind VBO
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+    return;
+}
+
+/**
+ * @brief
+ */
+void setup_FBO(const GLuint texture_, unsigned int& rio_FBO_)
+{
+    glGenFramebuffers(1, &rio_FBO_);
+    glBindFramebuffer(GL_FRAMEBUFFER, rio_FBO_);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture_, 0);
+
+    // Reset framebuffer binding
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    // Check framebuffer status
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+        std::cerr << "Framebuffer is not complete!" << endl;
+    }
+    else {
+        cout << "Framebuffer OK!" << endl;
+        // Unbind framebuffer
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
+    return;
+}
+
+
+
+/**
+ * @brief Initialize our shaders
+ *
+ * 3 shaders: mandelbrot renderer, upscaler, and crosshair plotter
+ * 
+ */
 void init_shaders( )
 {
     try {
@@ -463,7 +411,93 @@ void init_shaders( )
     return;
 }
 
-void render_window_title(GLFWwindow* window, float fps_, int max_iter_, int precision_mode_ )
+/**
+ * @brief
+ */
+void render_crosshair()
+{
+    // Render Crosshair
+    gp_hud_shader->use_shader();
+    glBindVertexArray(crossVAO);
+    glLineWidth(3.0f);
+    glDrawArrays(GL_LINES, 0, 4);
+    glBindVertexArray(0);
+    return;
+}
+
+/**
+ * @brief
+ */
+void update_mbd_shader_params(
+    bool b_update_cam,
+    bool b_update_zoom,
+    bool b_update_mode,
+    int  max_iter_,
+    int  mode_,
+    Input& input_)
+{
+    gp_mdb_shader->set_float("u_MaxIter", float(max_iter_));
+    gp_mdb_shader->set_int("u_Mode", mode_);
+
+    if (b_update_cam) {
+        float ds_val, ds_err;
+
+        double_to_ds(input_.m_scrn_cam.cameraTranslationX, ds_val, ds_err);
+        //printf("[CAM] PX: %.20lf =  %.20f, %.20f\n", input_.m_scrn_cam.cameraTranslationX, ds_val, ds_err);
+
+        gp_mdb_shader->set_vec2("u_ds_CameraPosX", glm::vec2(ds_val, ds_err));
+
+        double_to_ds(input_.m_scrn_cam.cameraTranslationY, ds_val, ds_err);
+        gp_mdb_shader->set_vec2("u_ds_CameraPosY", glm::vec2(ds_val, ds_err));
+    }
+
+    if (b_update_zoom) {
+        double _zoom = 1.0 / input_.m_scrn_cam.cameraZoom;
+        gp_mdb_shader->set_float("u_CameraZoom", static_cast<float>(_zoom));
+    }
+    return;
+}
+
+/**
+ * @brief
+ */
+void render_mandelbrot()
+{
+    gp_mdb_shader->use_shader();
+
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    glBindVertexArray(quadVAO);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+    return;
+}
+
+/**
+ * @brief
+ */
+void upscale_FBO()
+{
+    gp_upscale_shader->use_shader();
+
+    glBindTexture(GL_TEXTURE_2D, g_mdb_texture); // Bind Mandelbrot texture to read from
+    glBindVertexArray(quadVAO);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    return;
+}
+
+/**
+ * @brief Update the windows title bar with status info.
+ *
+ * @param[in] *window_, pointer to window object
+ * @param[in] fps_, frame-rate
+ * @param[in] max_iter_, current max iteration set 
+ * @param[in] precision_mode_, current rendering precision mode [0,1] 
+ */
+void render_window_title(GLFWwindow* window_, float fps_, int max_iter_, int precision_mode_ )
 {
     //std::string msStr = std::to_string((timeDiff / counter) * 1000);
     std::string newTitle = 
@@ -477,20 +511,22 @@ void render_window_title(GLFWwindow* window, float fps_, int max_iter_, int prec
         newTitle += ", dD";
     }
 
-    glfwSetWindowTitle(window, newTitle.c_str());
+    glfwSetWindowTitle(window_, newTitle.c_str());
 
     return;
 
 }
 
-// Callback function for window refresh event
+/**
+ * @brief Callback function for window refresh event
+ */
 void window_refresh_callback( GLFWwindow* window)
 {
     glClearColor(0.2f, 0.0f, 0.2f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     gp_mdb_shader->use_shader(); 
-    glBindVertexArray(VAO);
+    glBindVertexArray(quadVAO);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
     {
@@ -508,7 +544,9 @@ void window_refresh_callback( GLFWwindow* window)
     glFinish(); 
 }
 
-// Callback function for framebuffer size change event
+/**
+ * @brief Callback function for window size change event
+ */
 void win_resize_callback(GLFWwindow* window, int w, int h)
 { 
     scrn_wd = w;
@@ -533,15 +571,13 @@ void win_resize_callback(GLFWwindow* window, int w, int h)
     //else {
     //    glViewport((w - h) / 2, 0, h, h);
     //}
-
-
     return;
 }
 
 
-
-
-// Callback function for key events
+/**
+ * @brief  Callback function for key events
+ */
 void key_callback(GLFWwindow* win, int key, int scancode, int action, int mods)
 {
     // Handle key events using Input class
@@ -563,10 +599,7 @@ void update_camera(
         rout_b_update_zoom = true;
         return;
     }
-
-
-    
-
+     
     rout_b_update_zoom = (r_mov_.zoomIn || r_mov_.zoomOut);
     rout_b_update_cam = (r_mov_.moveDown || r_mov_.moveUp || r_mov_.moveLeft || r_mov_.moveRight);
 
@@ -579,27 +612,22 @@ void update_camera(
     }
     else if (r_mov_.moveLeft) {
      
-        printf("[Left] a) %.25lf\n", r_cam_.cameraTranslationX);
+        //4qprintf("[Left] a) %.25lf\n", r_cam_.cameraTranslationX);
 
-        long double A = r_cam_.cameraTranslationX;
-        long double B = _pan;
+        //long double A = r_cam_.cameraTranslationX;
+        //long double B = _pan;
 
-        if (A < -1.0) {
-            long double C = A + 1.0;
-            printf("       *)  LD  C: %.25lf - B:%.25lf\n", C, B);
-            
-            C = C - B;
-            printf("       *)  LD  C: %.25lf\n", C);
-        }
-
-        printf("       b)  LD  A: %.25lf - B:%.25lf\n", A, B);
-        A = A - B;
-
- 
-
+        //if (A < -1.0) {
+            //long double C = A + 1.0;
+            //printf("       *)  LD  C: %.25lf - B:%.25lf\n", C, B);   
+            //C = C - B;
+            //printf("       *)  LD  C: %.25lf\n", C);
+        //}
+        //printf("       b)  LD  A: %.25lf - B:%.25lf\n", A, B);
+        //A = A - B;
 
         r_cam_.cameraTranslationX   = r_cam_.cameraTranslationX - _pan;
-        printf("       c) A: %.25lf,  %.25lf\n",A, r_cam_.cameraTranslationX);
+        //printf("       c) A: %.25lf,  %.25lf\n",A, r_cam_.cameraTranslationX);
     }
 
     if (r_mov_.moveUp) {
@@ -623,8 +651,7 @@ void update_camera(
         }
 
         r_cam_.currentPanningSpeed = r_cam_.basePanningSpeed / r_cam_.cameraZoom; // Update camera panning speed
-
-        printf("[pan] %.20lf\n", r_cam_.currentPanningSpeed);
+        //printf("[pan] %.20lf\n", r_cam_.currentPanningSpeed);
 
     }
     else if (r_mov_.zoomOut) {
@@ -635,7 +662,7 @@ void update_camera(
         }
 
         r_cam_.currentPanningSpeed = r_cam_.basePanningSpeed / r_cam_.cameraZoom; // Update camera panning speed
-        printf("[pan] %.20lf\n", r_cam_.currentPanningSpeed);
+        //printf("[pan] %.20lf\n", r_cam_.currentPanningSpeed);
     }
 
     return;
@@ -663,6 +690,23 @@ void create_subres_texture( const int wd_, const int ht_, const int factor_, GLu
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glBindTexture(GL_TEXTURE_2D, 0);
+
+    return;
+}
+
+
+
+/**
+ * @brief Split a double value into two float representation
+ *
+ * @param[in] dval_  double value
+ * @param[out] rout_val_ Reference to store the value 'dval_' in float type
+ * @param[out] rout_err_ Reference to store precision loss when value 'dval_' is stored in float type
+ */
+void double_to_ds(double dval_, float& rout_val_, float& rout_err_)
+{
+    rout_val_ = (static_cast<float>(dval_));
+    rout_err_ = (static_cast<float>(dval_ - rout_val_));
 
     return;
 }

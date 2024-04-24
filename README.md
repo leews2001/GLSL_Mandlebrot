@@ -125,7 +125,7 @@ At lower zoom levels, where the view encompasses a wider area of the Mandelbrot,
 For realtime interactivity, good quality rendering (more iterations!) at high zoom scale is  going to be very challenging.
 |<img src="img/iter_01.png" width="360">|<img src="img/iter_02.png" width="360">|
 |:-:|:-:| 
-|<p style="width: 360 px">With max iterations at 100, so many details are lost, as many points are still considered to be in orbit, |z|<2, after 100 iterations.</p> | <p style="width: 360 px">With max iterations at 1000, the details are back.</p>|
+|*<p style="width: 360 px">With max iterations at 100, so many details are lost, as many points are still considered to be in orbit, abs(z)<2, after 100 iterations.</p>*|*<p style="width: 360 px">With max iterations at 1000, the details are back.</p>*|
 
 
 ## Some Tricks

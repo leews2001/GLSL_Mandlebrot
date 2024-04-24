@@ -277,6 +277,8 @@ Use the following keys to explore the Mandelbrot Map:
 - **Q**: Zoom in
 - **E**: Zoom out
 - **R**: Reset view
+- **V**: Turn on V-sync
+- **Shift+V**: Turn off V-Sync
 - **M**: Toggle precision between '*dS*' (2x32 bit) and '*dD*' (2x64 bit)
 - **0**: Set max iteration to 100
 - **1**: Set max iteration to 1000

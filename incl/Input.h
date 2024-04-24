@@ -34,7 +34,7 @@ public:
         bool moveDown = false;
         bool zoomIn = false;
         bool zoomOut = false;
-        bool reset_view = false;
+        bool reset_view = false; 
     };
 
 
@@ -42,8 +42,8 @@ public:
      * @brief the camera state of the screen.
      */
     struct Screen_Camera_t {
-        double cameraTranslationX = -0.8;
-        double cameraTranslationY = 0.;
+        double cameraTranslationX = -1.9997740601362903593126807559602500475710416233856384007148508574291012335984591928248364190215796259575718318799960175396106897;// -0.8;
+        double cameraTranslationY = -0.000000003290040321479435053496978675926680596785294650587841008832604692785354945299105635268119663115032523417152566433535;// 0.;
         double basePanningSpeed = 0.05;// 0.025;
         double currentPanningSpeed = 0.025;
         double cameraZoom = 1e0;
@@ -73,7 +73,7 @@ public:
      * This function handles the input events and updates the movement state
      * and r_iter_ value accordingly.
      */
-    void handle(int& r_iter_, bool& b_mode_);
+    void handle(int& r_iter_, bool& b_mode_, bool& b_xhair_);
 
     /**
      * @brief Checks the state of keys locally.

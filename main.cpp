@@ -168,19 +168,22 @@ int main()
     _FPS->start();
 
     // main event loop --->
+    bool b_xhair = true;
     while (!glfwWindowShouldClose(window)) {
 
         bool b_update_cam{ false };
         bool b_update_zoom{ false };
-        bool b_update_mode{ false };
+        bool b_update_mode{ false }; 
 
-        g_input.handle(_max_iter, b_update_mode);
+        g_input.handle(_max_iter, b_update_mode, b_xhair);
 
         // toggle the rendering precision (double-single <-> double double) 
         if (b_update_mode) {
             _mode = (_mode + 1) % 2;
             b_update_mode = false;
         }
+
+       
 
         double _fps = _FPS->update();
         render_window_title(window, _fps, _max_iter, _mode);
@@ -213,7 +216,9 @@ int main()
             glViewport(0, 0, g_scrn_wd, g_scrn_ht);
 
             upscale_FBO();
-            render_crosshair(); 
+            if (b_xhair) {
+                render_crosshair();
+            }
             glfwSwapBuffers(window);
 
             _b_idle = false;
@@ -226,7 +231,9 @@ int main()
                 glViewport(0, 0, g_scrn_wd, g_scrn_ht);
 
                 render_mandelbrot();
-                render_crosshair();
+                if (b_xhair) {
+                    render_crosshair();
+                }
        
                 _b_idle = true;
             }

@@ -9,7 +9,7 @@ Input::Input():
         { GLFW_KEY_W, &m_scrn_mov.moveUp },
         { GLFW_KEY_S, &m_scrn_mov.moveDown },
         { GLFW_KEY_Q, &m_scrn_mov.zoomIn },
-        { GLFW_KEY_E, &m_scrn_mov.zoomOut }
+        { GLFW_KEY_E, &m_scrn_mov.zoomOut }, 
     } },
     m_keyToRiterMap({
         { GLFW_KEY_0, 100 },
@@ -83,7 +83,7 @@ void Input::check_keys(
  * @param r_iter_ The reference to the iteration count.
  * @param b_mode_ The reference to the mode flag.
  */
-void Input::handle(int& r_iter_, bool& b_mode_) 
+void Input::handle(int& r_iter_, bool& b_mode_, bool& b_xhair_) 
 {
         
     // Iterate over each key code and its corresponding action
@@ -96,7 +96,10 @@ void Input::handle(int& r_iter_, bool& b_mode_)
     b_mode_ = m_pressed[GLFW_KEY_M];
     m_pressed[GLFW_KEY_M] = false; // Reset pressed state for 'M' key
 
-
+    if (m_pressed[GLFW_KEY_X]) {
+        b_xhair_ = !b_xhair_;
+        m_pressed[GLFW_KEY_X] = false;
+    }
     // Check if any key corresponding to r_iter_ is pressed
     for (const auto& pair : m_keyToRiterMap) {
         if (m_pressed[pair.first]) {

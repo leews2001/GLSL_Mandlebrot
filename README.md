@@ -1,3 +1,4 @@
+![](/img/banner.png)
 
 # Garage Days in Mandelbrot
 
@@ -330,3 +331,4 @@ Read more about Julia set on [wiki](https://en.wikipedia.org/wiki/Julia_set) or 
 - *Floating-point Computation*, Pat Sterbenz, Prentice-Hall, 1974s.
 - *Adaptive Precision Floating-Point Arithmetic and Fast Robust Geometric Predicates*, JR Shewchuk, 1997.
 - *Arbitrary precision real arithmetic: design and algorithms*, Valérie Ménissier-Morain, 2020.
+- [*Smooth coloring of Mandelbrot*](https://blogen.pasithee.fr/2019/01/06/smooth-coloring-of-mandelbrot/)

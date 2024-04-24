@@ -317,7 +317,7 @@ So, that's that. Until next time, drink, debug, and laugh!
 One more thing, you can turn this into Julia set explorer with just one (or two?) line change in the shader codes. You like to try? 
 
 |<img src="img/julia_01.png" width="360">|<img src="img/julia_02.png" width="360">|
-|:--:|:--:|
+|:-:|:-:|
 |*<p style="width: 360px">A Julia set at z=(0.28 + 0.008i)</p>*|*<p style="width: 360px">Another Julia set at z=(-0.70176 + 0.3842i)</p>*|
 
 Read more about Julia set on [wiki](https://en.wikipedia.org/wiki/Julia_set) or this [excellent article by Karl Sims](https://www.karlsims.com/julia.html).

@@ -5,15 +5,15 @@ Now, as I reminisce, a familiar eagerness stirring within me. A longing to dive 
 
 Demoscene, you ask? Check out it's wiki-page [here](https://en.wikipedia.org/wiki/Demoscene). 
 
-|<img src="/img/demo01.png" height="200">|<img src="/img/demo03.png" height="200">|
+|<img src="/img/demo01.png" width="360">|<img src="/img/demo03.png" width="360">|
 |:-:|:-:| 
-|*Demoscene... if you know, you know.*|*Mandelbrot Voxel from Future Crew's 1992 demo, 'Panic'.*|
+|*<p style="width:360;font-size:14px">Demoscene... if you know, you know.</p>*|*<p style="width:360;font-size:14px">Mandelbrot Voxel from Future Crew's 1992 demo, 'Panic'.</p>*|
  
  Some Mandelbrot generated on the archaic CGA graphic card:
 
-|<img src="/img/mdb_cga.jpg" height="200">|<img src="/img/CGA_Partial_Mandelbrot_Set.png"  height="200">|
+|<img src="/img/mdb_cga.jpg" width="360">|<img src="/img/CGA_Partial_Mandelbrot_Set.png"  width="360">|
 |:-:|:-:| 
-|*from Vintage Computer Federation Forums*|*from wikipedia.*|
+|*<p style="width:360;font-size:14px">from Vintage Computer Federation Forums</p>*|*<p style="width:360;font-size:14px">from wikipedia.</p>*|
 
 Yeah, that is the realtime animated voxel Mandelbrot running on a 80386 back then in 1992. I still remember my GW-BASIC rendering of a 320x200 Mandelbrot took more than a day on the 4.77MHz 8088 computer.
 
@@ -41,7 +41,7 @@ So how do we know if the point will spiral into infinity? We just have to check 
 
 |<img src="/img/mdb_orbit.png" width="360">| 
 |:-:|
-|*<p style="width: 360px">Iterating on 3 different (red, green, blue) points on the complex plane. Notice how the green point takes off when it falls outside the circle (radius = 2). Image from [blog post by stc](https://blogs.kent.ac.uk/onetwomany/2020/04/24/deterministic-vs-predictable-the-mandelbrot-set/)</p>*| 
+|*<p style="width: 360; font-size:14px">Iterating on 3 different (red, green, blue) points on the complex plane. Notice how the green point takes off when it falls outside the circle (radius = 2). Image from [blog post by stc](https://blogs.kent.ac.uk/onetwomany/2020/04/24/deterministic-vs-predictable-the-mandelbrot-set/)</p>*| 
 
 
 But what is the threshold for $\mid z_{n}\mid$ being large? Well, it's been mathematically confirmed that, if at any moment, $\mid z_{n}\mid >2$, then $\mid z_{n+1}\mid > \mid z_{n}\mid $. That is, once the point's distance from the origin is greater than 2, then this distance is always going to increase in every subsequent iteration- it's going infinity and beyond. So, we simply have to check:
@@ -80,7 +80,7 @@ Look at the picture below, observe the visual artifacts.
 
 |<img src="img/prec_loss_01.png" width="360">|<img src="img/prec_loss_03.png" width="360">|
 |:-:|:-:| 
-|*<p style="width: 360 px">'Chromosome' artifacts at scale 1e13, 2x32 bit precision, near (-1.5+ 0i).</p>*|*<p style="width: 360 px">'Mosaic' artifacts at scale 1e13, 2x32 bit precision, near (0.5+ 0.5i).</p>*|
+|*<p style="width: 360;  font-size:14px">'Chromosome' artifacts at scale 1e13, 2x32 bit precision, near (-1.5+ 0i).</p>*|*<p style="width:360; font-size:14px">'Mosaic' artifacts at scale 1e13, 2x32 bit precision, near (0.5+ 0.5i).</p>*|
 
 At high zoom scales, visual artifacts appears on the Mandelbrot due to limitations in arithmetic precision, 2x32 bit in our example. As we zoom deeper into the fractal, the numbers involved become incredibly small, and the differences between neighboring points become increasingly subtle. 
 
@@ -98,7 +98,7 @@ Now, if we fix those artifacts using 2x64 bit calculation, we get beautiful maps
 
 |<img src="/img/prec_loss_02.png" width="360">|<img src="/img/prec_loss_04.png" width="360">|
 |:-:|:-:| 
-|*<p style="width: 360px">At scale 1e13, 2x64 bit precision, near (-1.5+ 0i).</p>*|*<p style="width: 360px">At scale 1e13, 2x64 bit precision, near (0.5+ 0.5i).</p>*|
+|*<p style="width:360; font-size:14px">At scale 1e13, 2x64 bit precision, near (-1.5+ 0i).</p>*|*<p style="width:360; font-size:14px">At scale 1e13, 2x64 bit precision, near (0.5+ 0.5i).</p>*|
 
 ### Transversing Limitations.
 Similarly, at high zoom scale, we will be transversing the map in very small steps, e.g. $1e-15$.
@@ -123,9 +123,10 @@ This again, can be solved by using high precision calculation, at the cost of re
 At lower zoom levels, where the view encompasses a wider area of the Mandelbrot, fewer iterations are needed to determine the color of each pixel because the details are less pronounced. However, as we zoom in, the intricate structures of the Mandelbrot become more apparent, requiring more iterations to accurately capture the complexity of the set. As you can see in the video *The Hardest Trip* (see above), the max iterations at at 539 million. 
 
 For realtime interactivity, good quality rendering (more iterations!) at high zoom scale is  going to be very challenging.
+
 |<img src="img/iter_01.png" width="360">|<img src="img/iter_02.png" width="360">|
 |:-:|:-:| 
-|<p style="width:360">With max iterations at 100, many details are lost.</p>|<p style="width:360">With max iterations at 1000, the details are back.</p>|
+|<p style="width:360;  font-size:14px">With max iterations at 100, many details are lost.</p>|<p style="width:360; font-size:14px">With max iterations at 1000, the details are back.</p>|
 
 
 ## Some Tricks
@@ -292,11 +293,11 @@ Status of the framerate, max iteration, and precision mode is displayed in the w
 
 |<img src="img/mdb_01.png" width="360">|<img src="img/mdb_02_ds_loss.png" width="360">|
 |:-:|:-:| 
-|<p style="width: 360 px">Mandelbrot, bird's eye view. 2x32bit precision, 1000 iterations.</p> | <p style="width: 360 px">Zoom-in with 2x32 bit compute, precision errors appears at scale 1e12.</p>|
+|<p style="width: 360; font-size:14px">Mandelbrot, bird's eye view. 2x32bit precision, 1000 iterations.</p> | <p style="width:360;  font-size:14px">Zoom-in with 2x32 bit compute, precision errors appears at scale 1e12.</p>|
 
 |<img src="img/mdb_03_dd.png" width="360">|<img src="img/mdb_03_dd_loss.png" width="360">|
 |:-:|:-:|
-|*<p style="width: 360px">Switch to 2x64 bit and have nice rendering again</p>*|*<p style="width: 360px">At scale 1e22, artifacts return. Arbitrary precision maths is needed to go beyond.</p>*|
+|*<p style="width:360; font-size:14px">Switch to 2x64 bit and have nice rendering again</p>*|*<p style="width:360; font-size:14px">At scale 1e22, artifacts return. Arbitrary precision maths is needed to go beyond.</p>*|
 
 ## Closing Thoughts
 
@@ -317,7 +318,7 @@ One more thing, you can turn this into Julia set explorer with just one (or two?
 
 |<img src="img/julia_01.png" width="360">|<img src="img/julia_02.png" width="360">|
 |:-:|:-:|
-|*<p style="width: 360px">A Julia set at z=(0.28 + 0.008i)</p>*|*<p style="width: 360px">Another Julia set at z=(-0.70176 + 0.3842i)</p>*|
+|*<p style="width:360; font-size:14px">A Julia set at z=(0.28 + 0.008i)</p>*|*<p style="width:360; font-size:14px">Another Julia set at z=(-0.70176 + 0.3842i)</p>*|
 
 Read more about Julia set on [wiki](https://en.wikipedia.org/wiki/Julia_set) or this [excellent article by Karl Sims](https://www.karlsims.com/julia.html).
 

@@ -1,12 +1,23 @@
+/**
+ * @brief Vertex shader for rendering Mandelbrot
+ *
+ * @param pos,  vertex position attribute. 
+ * @return planePos, 2d plane position forwarded to the fragment shader.
+ */
+
 #version 450 core
 
-layout (location = 0) in vec3 pos;
-out vec2 pass_Position;
-
-uniform mat4 projection;
+out vec2 planePos;                  // Output 2d plane position
+layout (location = 0) in vec2 aPos; // incoming vertex position attribute
 
 void main()
 {
-    gl_Position =  vec4(pos.xyz, 1.0);
-    pass_Position = pos.xy;
+    // Set current vertex position
+    // Note: gl_Position is a homogeneous coordinate
+    gl_Position = vec4(aPos.xy, 0.,1.);
+
+    // foward position to the fragment shader
+    planePos = aPos;
+
+    return;
 }

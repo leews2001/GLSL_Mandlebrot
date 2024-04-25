@@ -1,62 +1,67 @@
+/**
+ * @brief Fragment shader for rendering Mandelbrot
+ * 
+ *  Emulated double precision is used in calculation.
+ *  Mode 0 = double-float
+ *  Mode 1 = double-double
+ *
+ * @param planePos, The 2D plane position attribute forwarded from the vertex shader.
+ * @param u_MandelbrotMode, Flag to determine whether to render the Mandelbrot or Juliabrot set.
+ * @param u_Mode, Flag to determine the rendering mode. 
+ * @param u_ds_CameraPosX, camera x-position in double-float precision.
+ * @param u_ds_CameraPosY, camera y-position in double-float precision.
+ * @param u_dd_CameraPosX, camera x-position in double-double precision.
+ * @param u_dd_CameraPosY, camera x-position in double-double precision.
+ * @param u_CameraZoom, zoom level of the camera, (0., 1.]
+ * @param u_MaxIter, maximum number of iterations for the Mandelbrot algorithm.
+ * 
+ * @return myOutputColor, pixel color in the Mandelbrot set.
+ */
 
 #version 450 core
 
-
-#define _EXT128 0
-
 #define MAX_ITERATIONS 1000
+
+// using float2, we can zoom to about 2e+12, before we see blocking artifacts. 
+#define float2 vec2 
+
+// using double2, we can zoom to about 2e+30, before we see blocking artifacts.
+#define double2 dvec2
 
 #ifdef GL_ES
 precision highp float;
 #endif
 
+out vec4 myOutputColor;
+in vec2 planePos;
+
 uniform int u_MandelbrotMode = 1; // = 0 if we want to render Juliabrot
 uniform int u_Mode = 0;
-uniform float u_Color;
 
-uniform vec2 u_ds_CameraPosX = { 0.f, 0.f };
-uniform vec2 u_ds_CameraPosY = { 0.f, 0.f };
-
-uniform dvec2 u_dd_CameraPosX = { 0., 0. };
-uniform dvec2 u_dd_CameraPosY = { 0., 0. };
+uniform vec2 u_ds_CameraPosX  = { 0., 0.};
+uniform vec2 u_ds_CameraPosY  = { 0., 0.};
+uniform dvec2 u_dd_CameraPosX = { 0., 0.};
+uniform dvec2 u_dd_CameraPosY = { 0., 0.};
 
 uniform float u_CameraZoom = 1.0f;
-
 uniform float u_MaxIter = MAX_ITERATIONS;
-
-
-// if we define float2 as 'dvec2', we can zoom to about 2e+30, before we see blocking artifacts.
-// if we define float2 as 'vec2', we can zoom to about 2e+12, before we see blocking artifacts. 
-#if ( _EXT128 == 1)
-    #define float2 dvec2
-    #define float_01 double
-#else
-    #define float2 vec2
-    #define float_01 float
-#endif
-
-#define double2 dvec2
-
-
-in vec2 pass_Position;
-
-out vec4 myOutputColor;
+ 
 
 //--- color by Renormalizing the Mandelbrot Escape
-vec3 colorFunc2(int iter, float dist2) {
-
+vec3 colorFunc2(int iter, float dist2) 
+{
     float sl = (float(iter) - log2(log2(dist2)) + 4.0) * .0025;
     return vec3(0.5 + 0.5 * cos(2.7 + sl * 30.0 + vec3(0.0, .6, 1.0)));
 
 } 
 
 /////////////////////////////////////
-float2 ds_sub( const float2 ds0_, const float2 ds1_)
+float2 emdp_sub( const float2 ds0_, const float2 ds1_)
 {
-    precise float_01 _t1 = ds0_.x - ds1_.x;
-    float_01 _e = _t1 - ds0_.x;
+    precise float _t1 = ds0_.x - ds1_.x;
+    float _e = _t1 - ds0_.x;
 
-    precise float_01 _t2 = ((-ds1_.x - _e) + (ds0_.x - (_t1 - _e))) + ds0_.y - ds1_.y;
+    precise float _t2 = ((-ds1_.x - _e) + (ds0_.x - (_t1 - _e))) + ds0_.y - ds1_.y;
 
     float2 _ds;
     _ds.x = _e = _t1 + _t2;
@@ -65,7 +70,7 @@ float2 ds_sub( const float2 ds0_, const float2 ds1_)
     return _ds;
 }
 
-double2 ds_sub(const double2 ds0_, const double2 ds1_)
+double2 emdp_sub(const double2 ds0_, const double2 ds1_)
 {
     precise double _t1 = ds0_.x - ds1_.x;
     double _e = _t1 - ds0_.x;
@@ -80,18 +85,18 @@ double2 ds_sub(const double2 ds0_, const double2 ds1_)
 }
 
 /////////////////////////////////////
-float2 ds_add( const float2 ds0_, const float2 ds1_)
+float2 emdp_add( const float2 ds0_, const float2 ds1_)
 {
     //-- TWO-SUM ( ds0_.val, ds1_.val) [Knuth]
-    precise float_01 _x = ds0_.x + ds1_.x;
+    precise float _x = ds0_.x + ds1_.x;
 
     // Note: the effective _ds1.val that is added to ds0_.val to give _x;
     //precise  
-    float_01 _ds1_val_virtual = _x - ds0_.x;
+    float _ds1_val_virtual = _x - ds0_.x;
 
     // Note: (_x - _ds1_val_virtual) = _ds0_val_virtual, the effective _ds0.val that contributing to _x;
     // Note: _y = all the round off errors in _x;
-    precise float_01 _y = ((ds1_.x - _ds1_val_virtual) + (ds0_.x - (_x - _ds1_val_virtual))) + ds0_.y + ds1_.y;
+    precise float _y = ((ds1_.x - _ds1_val_virtual) + (ds0_.x - (_x - _ds1_val_virtual))) + ds0_.y + ds1_.y;
     // Note: also add existing errors from ds0_ and ds1_
     //_y = _y + ds0_.y + ds1_.y;
 
@@ -104,7 +109,7 @@ float2 ds_add( const float2 ds0_, const float2 ds1_)
 }
 
 
-double2 ds_add(const double2 ds0_, const double2 ds1_)
+double2 emdp_add(const double2 ds0_, const double2 ds1_)
 {
     precise double _x = ds0_.x + ds1_.x;
     double _ds1_val_virtual = _x - ds0_.x;
@@ -120,35 +125,35 @@ double2 ds_add(const double2 ds0_, const double2 ds1_)
 
 
 /////////////////////////////////////
-float2 ds_mul( const float2 ds0_, const float2 ds1_)
+float2 emdp_mul( const float2 ds0_, const float2 ds1_)
 {
     //--- using SPLIT(a,s)
-    precise float_01 cona = ds0_.x * 8193.f;
-    precise float_01 conb = ds1_.x * 8193.f;
-    precise float_01 a1 = cona - (cona - ds0_.x); // hi-split
-    precise float_01 b1 = conb - (conb - ds1_.x); // hi-split
+    precise float cona = ds0_.x * 8193.f;
+    precise float conb = ds1_.x * 8193.f;
+    precise float a1 = cona - (cona - ds0_.x); // hi-split
+    precise float b1 = conb - (conb - ds1_.x); // hi-split
     
 
-    float_01 a2 = ds0_.x - a1; // lo-split
-    float_01 b2 = ds1_.x - b1; // lo-split
+    float a2 = ds0_.x - a1; // lo-split
+    float b2 = ds1_.x - b1; // lo-split
 
     //---  (c11, c21) is result of TWO-PRODUCT( ds0_.hi, ds1_.hi) [Dekker]
-    float_01 c11 = ds0_.x * ds1_.x;
+    float c11 = ds0_.x * ds1_.x;
     //precise 
         //float err3 = (c11 - (a1 * b1)) - (a2 * b1) - (a1 * b2);
     //precise 
         //float c21 = (a2 * b2) - err3;
 
-    precise float_01 c21 = (((a1 * b1 - c11) + (a1 * b2)) + (a2 * b1)) + (a2 * b2);
+    precise float c21 = (((a1 * b1 - c11) + (a1 * b2)) + (a2 * b1)) + (a2 * b2);
 
     //--- Compute cross hi-lo products, only hi-word is needed.
     //precise 
-    float_01 c2 = (ds0_.x * ds1_.y) + (ds0_.y * ds1_.x);
+    float c2 = (ds0_.x * ds1_.y) + (ds0_.y * ds1_.x);
 
     // TWO-SUM( [c11,c21], [c2,0]), also adding low-order product.
-    float_01 t1 = c2+ c11;
-    float_01 e = t1 - c11;
-    precise float_01 t2 = ((c2 - e) + (c11 - (t1 - e))) + c21;
+    float t1 = c2+ c11;
+    float e = t1 - c11;
+    precise float t2 = ((c2 - e) + (c11 - (t1 - e))) + c21;
 
     // FAST-TWO-SUM (t1, t2 +  (ds0_.lo * ds1_.lo))
     t2 = t2 + (ds0_.y * ds1_.y);
@@ -160,13 +165,12 @@ float2 ds_mul( const float2 ds0_, const float2 ds1_)
     return  _ds;
 }
 
-double2 ds_mul(const double2 ds0_, const double2 ds1_)
+double2 emdp_mul(const double2 ds0_, const double2 ds1_)
 { 
     precise double cona = ds0_.x * 8193.f;
     precise double conb = ds1_.x * 8193.f;
     precise double a1 = cona - (cona - ds0_.x); // hi-split
     precise double b1 = conb - (conb - ds1_.x); // hi-split
-
 
     double a2 = ds0_.x - a1; // lo-split
     double b2 = ds1_.x - b1; // lo-split
@@ -194,30 +198,30 @@ double2 ds_mul(const double2 ds0_, const double2 ds1_)
 
 
 /////////////////////////////////////
-float2 ds_scale( const float2 ds0_, const float sc_)
+float2 emdp_scale( const float2 ds0_, const float sc_)
 {
     //--- using SPLIT(a,s)
-    precise float_01 cona = ds0_.x * 8193.;
-    precise float_01 conb = sc_ * 8193.;
+    precise float cona = ds0_.x * 8193.;
+    precise float conb = sc_ * 8193.;
  
-    float_01  a1 = cona - (cona - ds0_.x); // hi-split
-    float_01  b1 = conb - (conb - sc_); // hi-split
+    float  a1 = cona - (cona - ds0_.x); // hi-split
+    float  b1 = conb - (conb - sc_);    // hi-split
 
-    float_01 a2 = ds0_.x - a1; // lo-split
-    float_01 b2 = sc_ - b1; // lo-split
+    float a2 = ds0_.x - a1; // lo-split
+    float b2 = sc_ - b1;    // lo-split
 
     //---  (c11, c21) is result of TWO-PRODUCT( ds0_.hi, ds1_.hi) [Dekker]
-    float_01 c11 = ds0_.x * sc_; 
-    float_01 err3 = (c11 - (a1 * b1)) - (a2 * b1) - (a1 * b2);
-    float_01 c21 = (a2 * b2) - err3;
+    float c11 = ds0_.x * sc_; 
+    float err3 = (c11 - (a1 * b1)) - (a2 * b1) - (a1 * b2);
+    float c21 = (a2 * b2) - err3;
 
     //--- Compute cross hi-lo products, only hi-word is needed.
-    float_01 c2 = (ds0_.y * sc_);
+    float c2 = (ds0_.y * sc_);
 
     // TWO-SUM( [c11,c21], [c2,0]), also adding low-order product.
-    float_01 t1 = c2 + c11; 
-    float_01 e = t1 - c11;
-    float_01 t2 = ((c2 - e) + (c11 - (t1 - e))) + c21;
+    float t1 = c2 + c11; 
+    float e = t1 - c11;
+    float t2 = ((c2 - e) + (c11 - (t1 - e))) + c21;
 
     float2 _ds;
     _ds.x = t1 + t2;
@@ -226,17 +230,16 @@ float2 ds_scale( const float2 ds0_, const float sc_)
     return  _ds;
 }
 
-double2 ds_scale(const double2 ds0_, const float sc_)
+double2 emdp_scale(const double2 ds0_, const float sc_)
 {
     precise double cona = ds0_.x * 8193.;
     precise double conb = sc_ * 8193.;
 
-    double  a1 = cona - (cona - ds0_.x); // hi-split
-
-    double b1 = conb - (conb - sc_); // hi-split
+    double a1 = cona - (cona - ds0_.x); // hi-split
+    double b1 = conb - (conb - sc_);    // hi-split
 
     double a2 = ds0_.x - a1; // lo-split
-    double b2 = sc_ - b1; // lo-split
+    double b2 = sc_ - b1;    // lo-split
 
     double c11 = ds0_.x * sc_;
 
@@ -262,15 +265,15 @@ void render_01_ds()
 {
     vec3 color = vec3(0.0, 0.0, 0.0);
 
-    float2 _t1x = float2( pass_Position.x*2, 0.f );
-    float2 _t1y = float2( pass_Position.y*2, 0.f );
+    float2 _t1x = float2( planePos.x*2, 0.f );
+    float2 _t1y = float2( planePos.y*2, 0.f );
 
-    _t1x = ds_scale(_t1x, u_CameraZoom);
-    _t1y = ds_scale(_t1y, u_CameraZoom);
+    _t1x = emdp_scale(_t1x, u_CameraZoom);
+    _t1y = emdp_scale(_t1y, u_CameraZoom);
 
 
-    float2 _ds_cx = ds_add(_t1x, u_ds_CameraPosX);
-    float2 _ds_cy = ds_add(_t1y, u_ds_CameraPosY);
+    float2 _ds_cx = emdp_add(_t1x, u_ds_CameraPosX);
+    float2 _ds_cy = emdp_add(_t1y, u_ds_CameraPosY);
 
     // vec2 z = c;
     // We could have set _ds_zx and _ds_zy to zero for strict adherence to the
@@ -289,27 +292,27 @@ void render_01_ds()
 
     int iterations = 0;
 
-    float2 _ds_dist_x = ds_mul(_ds_zx, _ds_zx);
-    float2 _ds_dist_y = ds_mul(_ds_zy, _ds_zy);
+    float2 _ds_dist_x = emdp_mul(_ds_zx, _ds_zx);
+    float2 _ds_dist_y = emdp_mul(_ds_zy, _ds_zy);
 
     while (iterations < u_MaxIter)
     {
-        float2 _dist0 = ds_add(_ds_dist_x, _ds_dist_y);
+        float2 _dist0 = emdp_add(_ds_dist_x, _ds_dist_y);
 
         if (_dist0.x > 4.0) {
             color = colorFunc2(iterations, float(_dist0.x) );
             break;
         }
 
-        _ds_zy = ds_mul(_ds_zx, _ds_zy);
-        _ds_zy = ds_add(_ds_zy, _ds_zy);
-        _ds_zy = ds_add(_ds_zy, _ds_cy);
+        _ds_zy = emdp_mul(_ds_zx, _ds_zy);
+        _ds_zy = emdp_add(_ds_zy, _ds_zy);
+        _ds_zy = emdp_add(_ds_zy, _ds_cy);
 
-        _ds_zx = ds_sub(_ds_dist_x, _ds_dist_y);
-        _ds_zx = ds_add(_ds_zx, _ds_cx);
+        _ds_zx = emdp_sub(_ds_dist_x, _ds_dist_y);
+        _ds_zx = emdp_add(_ds_zx, _ds_cx);
 
-        _ds_dist_x = ds_mul(_ds_zx, _ds_zx);
-        _ds_dist_y = ds_mul(_ds_zy, _ds_zy);
+        _ds_dist_x = emdp_mul(_ds_zx, _ds_zx);
+        _ds_dist_y = emdp_mul(_ds_zy, _ds_zy);
 
         ++iterations;
     }
@@ -322,48 +325,45 @@ void render_01_dd()
 {
     vec3 color = vec3(0.0, 0.0, 0.0);
 
-    double2 _t1x = double2(pass_Position.x * 2, 0.f);
-    double2 _t1y = double2(pass_Position.y * 2, 0.f);
+    double2 _t1x = double2(planePos.x * 2, 0.f);
+    double2 _t1y = double2(planePos.y * 2, 0.f);
 
+    _t1x = emdp_scale(_t1x, u_CameraZoom);
+    _t1y = emdp_scale(_t1y, u_CameraZoom);
 
+    double2 _ds_cx = emdp_add(_t1x, u_ds_CameraPosX);
+    double2 _ds_cy = emdp_add(_t1y, u_ds_CameraPosY);
 
-    _t1x = ds_scale(_t1x, u_CameraZoom);
-    _t1y = ds_scale(_t1y, u_CameraZoom);
-
-
-    double2 _ds_cx = ds_add(_t1x, u_ds_CameraPosX);
-    double2 _ds_cy = ds_add(_t1y, u_ds_CameraPosY);
-
-    //vec2 z = c;
     double2 _ds_zx = _ds_cx;
     double2 _ds_zy = _ds_cy;
 
     int iterations = 0;
 
-    double2 _ds_dist_x = ds_mul(_ds_zx, _ds_zx);
-    double2 _ds_dist_y = ds_mul(_ds_zy, _ds_zy);
+    double2 _ds_dist_x = emdp_mul(_ds_zx, _ds_zx);
+    double2 _ds_dist_y = emdp_mul(_ds_zy, _ds_zy);
 
-    while (iterations < u_MaxIter)
-    {
-        double2 _dist0 = ds_add(_ds_dist_x, _ds_dist_y);
+    while (iterations < u_MaxIter) {
+
+        double2 _dist0 = emdp_add(_ds_dist_x, _ds_dist_y);
 
         if (_dist0.x > 4.0) {
             color = colorFunc2(iterations, float(_dist0.x));
             break;
         }
 
-        _ds_zy = ds_mul(_ds_zx, _ds_zy);
-        _ds_zy = ds_add(_ds_zy, _ds_zy);
-        _ds_zy = ds_add(_ds_zy, _ds_cy);
+        _ds_zy = emdp_mul(_ds_zx, _ds_zy);
+        _ds_zy = emdp_add(_ds_zy, _ds_zy);
+        _ds_zy = emdp_add(_ds_zy, _ds_cy);
 
-        _ds_zx = ds_sub(_ds_dist_x, _ds_dist_y);
-        _ds_zx = ds_add(_ds_zx, _ds_cx);
+        _ds_zx = emdp_sub(_ds_dist_x, _ds_dist_y);
+        _ds_zx = emdp_add(_ds_zx, _ds_cx);
 
-        _ds_dist_x = ds_mul(_ds_zx, _ds_zx);
-        _ds_dist_y = ds_mul(_ds_zy, _ds_zy);
+        _ds_dist_x = emdp_mul(_ds_zx, _ds_zx);
+        _ds_dist_y = emdp_mul(_ds_zy, _ds_zy);
 
         ++iterations;
     }
+
     myOutputColor = vec4(color, 1.0);
     return;
 }
@@ -372,10 +372,6 @@ void render_01_dd()
 
 void main()
 {
-    //if ( int(gl_FragCoord.x) % 10 != 0 || int(gl_FragCoord.y) % 10 != 0) {
-    //    return;
-    //}
- 
     if (u_Mode == 0) {
         render_01_ds();
     }
@@ -383,4 +379,5 @@ void main()
         render_01_dd();
     }
  
+    return;
 }

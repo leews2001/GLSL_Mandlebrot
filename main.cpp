@@ -19,7 +19,7 @@
 // During movement (zoom, translate), for speedy interaction,
 // rendering will be performed  at lower resolution of 
 // (screen_width x screen_height) / SUB_RENDER_FACTOR.
-constexpr int SUB_RENDER_FACTOR = 4;
+constexpr int SUB_RENDER_FACTOR = 8;
 
 //-----------------------------------------------------------
 // Function prototypes
@@ -41,9 +41,14 @@ void render_mandelbrot();
 void upscale_FBO();
 
 void render_window_title(GLFWwindow* window, float fps_, int max_iter_, int precision_mode_);
-void window_refresh_callback(GLFWwindow* window);
-void win_resize_callback(GLFWwindow* window, int w, int h);
-void key_callback(GLFWwindow* win, int key, int scancode, int action, int mods);
+
+static void window_refresh_callback(GLFWwindow* window);
+static void win_resize_callback(GLFWwindow* window, int w, int h);
+static void key_callback(GLFWwindow* win, int key, int scancode, int action, int mods);
+static void mouse_callback(GLFWwindow* window, int button, int action, int mods);
+
+// Function to handle mouse movement events
+static void cursor_pos_callback(GLFWwindow* window, double xpos, double ypos);
 
 void update_camera( 
     bool& rout_b_update_cam,
@@ -56,7 +61,12 @@ void create_subres_texture( const int wd_, const int ht_, const int factor_, GLu
 void double_to_ds(double dval_, float& rout_val_, float& rout_err_);
 
 //-----------------------------------------------------------
-Input g_input;
+// Define global variables to track mouse dragging state
+bool g_isDragging = false;
+double g_previousX{ 0. };
+double g_previousY{ 0. };
+
+Input g_input; // keyboard input
 
 Shader* gp_mdb_shader = nullptr;
 Shader* gp_hud_shader = nullptr;
@@ -120,7 +130,10 @@ int main()
     glfwSetWindowRefreshCallback(window, window_refresh_callback);
     glfwSetWindowSizeCallback(window, win_resize_callback);
     glfwSetWindowAspectRatio(window, 1, 1);
-  
+ 
+    glfwSetMouseButtonCallback(window, mouse_callback);
+    // Set cursor position callback
+    glfwSetCursorPosCallback(window, cursor_pos_callback);
     //-----------------------------------------------------------
 
     setup_buffers_for_quad_surface( quadVAO, quadVBO, quadEBO);
@@ -530,7 +543,7 @@ void render_window_title(GLFWwindow* window_, float fps_, int max_iter_, int pre
 /**
  * @brief Callback function for window refresh event
  */
-void window_refresh_callback( GLFWwindow* window)
+static void window_refresh_callback( GLFWwindow* window)
 {
     glClearColor(0.2f, 0.0f, 0.2f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -557,7 +570,7 @@ void window_refresh_callback( GLFWwindow* window)
 /**
  * @brief Callback function for window size change event
  */
-void win_resize_callback(GLFWwindow* window, int w, int h)
+static void win_resize_callback(GLFWwindow* window, int w, int h)
 { 
     g_scrn_wd = w;
     g_scrn_ht = h;
@@ -588,7 +601,7 @@ void win_resize_callback(GLFWwindow* window, int w, int h)
 /**
  * @brief  Callback function for key events
  */
-void key_callback(GLFWwindow* win, int key, int scancode, int action, int mods)
+static void key_callback(GLFWwindow* win, int key, int scancode, int action, int mods)
 {
     // Handle key events using Input class
     Input* input = (Input*)glfwGetWindowUserPointer(win);
@@ -668,6 +681,45 @@ void update_camera(
 
     return;
 }
+
+/**
+ * @brief   
+ */
+static void mouse_callback(GLFWwindow* window, int button, int action, int mods)
+{
+    if (button == GLFW_MOUSE_BUTTON_LEFT) {
+        if (action == GLFW_PRESS) {
+            g_isDragging = true;
+            glfwGetCursorPos(window, &g_previousX, &g_previousY);
+        }
+        else if (action == GLFW_RELEASE) {
+            g_isDragging = false;
+        }
+    }
+ 
+    return;
+}
+
+/**
+ * @brief
+ */
+static void cursor_pos_callback(GLFWwindow* window, double xpos, double ypos) {
+
+    if (g_isDragging) {
+        // Calculate panning distance
+        double deltaX = xpos - g_previousX;
+        double deltaY = ypos - g_previousY;
+
+        // Update camera or viewport position based on panning distance
+        // For example, update camera translation or viewport coordinates
+
+        // Update previous mouse position
+        g_previousX = xpos;
+        g_previousY = ypos;
+    }
+    return;
+}
+
 
 /**
  * @brief Creates a texture with reduced resolution for sub-rendering purposes.

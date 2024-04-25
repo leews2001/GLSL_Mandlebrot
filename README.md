@@ -132,6 +132,76 @@ For realtime interactivity, good quality rendering (more iterations!) at high zo
 
 ## Some Tricks
 
+### One multiplication less, per pixel, per iteration.
+
+A straight forward implementation of the Mandelbrot algorithm will look somethign like the following:
+
+```cpp
+...
+
+while (iterations < u_MaxIter) {
+    vec2 new_z;
+    // compute new_z = |z|^{2} + c
+    new_z.x = (z.x * z.x) - (z.y * z.y) +c.x;
+    new_z.y = 2 * z.x * z.y + c.y;
+
+    // compute |new_z|^{2}
+    float dist = dot(new_z, new_z);
+
+    if (dist > 4.0) {
+        // if |new_z|^{2} > 2^{2}, abort and color
+        color = colorFunc2( iterations, dist);
+        break;
+    }
+
+    // assigning for the next iteration
+    z = new_z;
+
+    ++iterations;
+}
+...
+```
+
+If we can rearrange the order of calculations abit, 
+for example, we calculate and check the orbit distance of $z$ first as follows:
+
+```cpp
+...
+// compute self hadamard product of z
+vec2 zoz =  vec2(z.x*z.x, z.y*z.y);
+
+while (iterations < u_MaxIter) {
+  
+    // compute |z|^{2}, using sum of the hadamard product elements
+    float dist = zoz.x + zoz.y;
+
+    if (dist > 4.0) {
+        // if |z|^{2} > 2^{2}, abort and color
+       color = colorFunc2(iterations, dist);
+       break;
+    }
+  
+    // compute |z|^{2} + c
+    // direct using z.y as placeholder for new z.y,
+    // as we are not going to need it subsequently,
+    // because zoz contains the values we need to calculate new z.x
+
+    z.y = 2*( z.x * z.y) + c.y;
+    z.x = (zoz.x - zoz.y) + c.x;
+
+    zoz =  vec2(z.x*z.x, z.y*z.y); 
+
+    ++iterations;
+}
+...
+```
+
+We have also update imaginary component, $z.y$, before the real component, $z.x$. Most interestingly, note how the $z.x$ is updated by using the difference of the hadarmard product elements. Yes, we have eliminated the unnecessary duplicated computation of $(z.x * z.x)$ and $(z.y * z.y)$,
+found in updating the $z.x$ component and computing $|z|^{2}$
+
+Less calculations! It adds up, per pixel, per iteration.
+
+### Dynamic View with Reduced-Resolution 
 To improve realtime interaction, that is reducing the response time to user input events (panning, zooming), the Mandelbrot will be rendered at a lower resolution when view change is in progress. When the view becomes stationary, the Mandelbrot will be rendered in full resolution.
 
 In our code, we preset the desired downsampling factor (relative to window size) during non-stationary rendering. 
@@ -280,7 +350,10 @@ Use the following keys to explore the Mandelbrot Map:
 - **R**: Reset view
 - **V**: Turn on V-sync
 - **Shift+V**: Turn off V-Sync
-- **M**: Toggle precision between '*dS*' (2x32 bit) and '*dD*' (2x64 bit)
+- **M**: Toggle precision between 
+    - '*S*' (single, 32 bit)[^1], 
+    - '*dS*' (emulated, double-single, 2x32 bit), *default*
+    - '*dD*' (emuluated, double-double, 2x64 bit)
 - **0**: Set max iteration to 100
 - **1**: Set max iteration to 1000
 - **2**: Set max iteration to 2000
@@ -289,6 +362,7 @@ Use the following keys to explore the Mandelbrot Map:
 - **5**: Set max iteration to 12000
 - **Esc**: Quit
 
+[^1]: In 32-bit precision mode, artifacts will begin to appear in much shallower zoom scale, around 1e7.
 
 Status of the framerate, max iteration, and precision mode is displayed in the windows title bar.
 

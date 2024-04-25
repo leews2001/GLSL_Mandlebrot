@@ -7,11 +7,9 @@
  *
  * @param planePos, The 2D plane position attribute forwarded from the vertex shader.
  * @param u_MandelbrotMode, Flag to determine whether to render the Mandelbrot or Juliabrot set.
- * @param u_Mode, Flag to determine the rendering mode. 
+ * @param u_Mode, rendering precision mode [0,1,2]. 
  * @param u_ds_CameraPosX, camera x-position in double-float precision.
  * @param u_ds_CameraPosY, camera y-position in double-float precision.
- * @param u_dd_CameraPosX, camera x-position in double-double precision.
- * @param u_dd_CameraPosY, camera x-position in double-double precision.
  * @param u_CameraZoom, zoom level of the camera, (0., 1.]
  * @param u_MaxIter, maximum number of iterations for the Mandelbrot algorithm.
  * 
@@ -40,8 +38,10 @@ uniform int u_Mode = 0;
 
 uniform vec2 u_ds_CameraPosX  = { 0., 0.};
 uniform vec2 u_ds_CameraPosY  = { 0., 0.};
-uniform dvec2 u_dd_CameraPosX = { 0., 0.};
-uniform dvec2 u_dd_CameraPosY = { 0., 0.};
+
+// Future:
+// uniform dvec2 u_dd_CameraPosX = { 0., 0.};
+// uniform dvec2 u_dd_CameraPosY = { 0., 0.};
 
 uniform float u_CameraZoom = 1.0f;
 uniform float u_MaxIter = MAX_ITERATIONS;
@@ -368,14 +368,86 @@ void render_01_dd()
     return;
 }
 
+void render_01_std()
+{
+    vec3 _color = vec3(0.0, 0.0, 0.0);
 
+    vec2 _camPos = vec2(u_ds_CameraPosX.x, u_ds_CameraPosY.x);
+    vec2 c = (2.0 * u_CameraZoom) * planePos + _camPos;
+    vec2 z = c;
+
+    int _iter = 0;
+    //-- original version, non-optimize
+    /*
+    {
+        while (_iter < u_MaxIter) {
+            vec2 _new_z;
+            // compute _new_z = |z|^{2} + c
+            _new_z.x = (z.x * z.x) - (z.y * z.y) + c.x;
+            _new_z.y = 2 * z.x * z.y + c.y;
+
+            // compute |_new_z|^{2}
+            float _dist = dot(_new_z, _new_z);
+
+            if (_dist > 4.0) {
+                // if |_new_z|^{2} > 2^{2}, abort and _color
+                _color = _colorFunc2(_iter, _dist);
+                break;
+            }
+
+            // assigning for the next iteration
+            z = _new_z;
+
+            ++_iter;
+        }
+    }
+    */
+
+
+    //-- slight optimized ver. by reordering instructions, less multiplication. 
+
+    // compute hadamard product z
+    vec2 _zoz = vec2(z.x * z.x, z.y * z.y);
+
+    while (_iter < u_MaxIter) {
+        // compute |z|^{2}
+        float _dist = _zoz.x + _zoz.y;
+
+        if( _dist > 4.0) {
+            // if |z|^{2} > 2^{2}, abort and color
+            _color = colorFunc2( _iter, _dist);
+            break;
+        }
+
+        // compute |z|^{2} + c
+        // direct using z.y as placeholder for new z.y,
+        // as we are not going to need it subsequently,
+        // because zoz contains the values we need to calculate new z.x
+
+        z.y = 2 * (z.x * z.y) + c.y;
+        z.x = ( _zoz.x - _zoz.y) + c.x;
+        _zoz = vec2( z.x*z.x, z.y*z.y);
+        ++_iter;
+    }
+
+    myOutputColor = vec4( _color, 1.0);
+
+    return;
+}
 
 void main()
 {
     if (u_Mode == 0) {
+        // standard 32bit mode, 
+        // artifacts will appear aroung zoom scale 1e+7
+        render_01_std();
+    }
+    else if (u_Mode == 1) {
+        // emulated 2x 32bit mode
         render_01_ds();
     }
     else {
+        // emulated 2x 64bit mode.
         render_01_dd();
     }
  

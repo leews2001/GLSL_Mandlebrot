@@ -161,7 +161,7 @@ int main()
 
     glfwSwapInterval(1); //  1: turn on v-sync, 0: off
     
-    int _mode = 0;
+    int _mode = 1; // default using 'dS' precision
     bool _b_idle = true;
 
     FPSCounter* _FPS = FPSCounter::getInstance();
@@ -177,9 +177,9 @@ int main()
 
         g_input.handle(_max_iter, b_update_mode, b_xhair);
 
-        // toggle the rendering precision (double-single <-> double double) 
+        // toggle the rendering precision ( single-> double-single-> double double) 
         if (b_update_mode) {
-            _mode = (_mode + 1) % 2;
+            _mode = (_mode + 1) % 3;
             b_update_mode = false;
         }
 
@@ -514,8 +514,10 @@ void render_window_title(GLFWwindow* window_, float fps_, int max_iter_, int pre
             + std::format("{}", max_iter_) );
 
     if (precision_mode_ == 0) {
-        newTitle += ", dS";
+        newTitle += ", S";
     } else if (precision_mode_ == 1) {
+        newTitle += ", dS";
+    } else if (precision_mode_ == 2) {
         newTitle += ", dD";
     }
 

@@ -47,7 +47,10 @@ uniform float u_CameraZoom = 1.0f;
 uniform float u_MaxIter = MAX_ITERATIONS;
  
 
-//--- color by Renormalizing the Mandelbrot Escape
+/**
+ * @brief color by Renormalizing the Mandelbrot Escape
+ *
+ */
 vec3 colorFunc2(int iter, float dist2) 
 {
     float sl = (float(iter) - log2(log2(dist2)) + 4.0) * .0025;
@@ -56,6 +59,11 @@ vec3 colorFunc2(int iter, float dist2)
 } 
 
 /////////////////////////////////////
+
+/**
+ * @brief
+ *
+ */
 float2 emdp_sub( const float2 ds0_, const float2 ds1_)
 {
     precise float _t1 = ds0_.x - ds1_.x;
@@ -70,6 +78,10 @@ float2 emdp_sub( const float2 ds0_, const float2 ds1_)
     return _ds;
 }
 
+/**
+ * @brief
+ *
+ */
 double2 emdp_sub(const double2 ds0_, const double2 ds1_)
 {
     precise double _t1 = ds0_.x - ds1_.x;
@@ -85,6 +97,11 @@ double2 emdp_sub(const double2 ds0_, const double2 ds1_)
 }
 
 /////////////////////////////////////
+
+/**
+ * @brief
+ *
+ */
 float2 emdp_add( const float2 ds0_, const float2 ds1_)
 {
     //-- TWO-SUM ( ds0_.val, ds1_.val) [Knuth]
@@ -108,7 +125,10 @@ float2 emdp_add( const float2 ds0_, const float2 ds1_)
     return  _ds;
 }
 
-
+/**
+ * @brief
+ *
+ */
 double2 emdp_add(const double2 ds0_, const double2 ds1_)
 {
     precise double _x = ds0_.x + ds1_.x;
@@ -125,6 +145,11 @@ double2 emdp_add(const double2 ds0_, const double2 ds1_)
 
 
 /////////////////////////////////////
+
+/**
+ * @brief
+ *
+ */
 float2 emdp_mul( const float2 ds0_, const float2 ds1_)
 {
     //--- using SPLIT(a,s)
@@ -165,6 +190,10 @@ float2 emdp_mul( const float2 ds0_, const float2 ds1_)
     return  _ds;
 }
 
+/**
+ * @brief
+ *
+ */
 double2 emdp_mul(const double2 ds0_, const double2 ds1_)
 { 
     precise double cona = ds0_.x * 8193.f;
@@ -198,6 +227,11 @@ double2 emdp_mul(const double2 ds0_, const double2 ds1_)
 
 
 /////////////////////////////////////
+
+/**
+ * @brief
+ *
+ */
 float2 emdp_scale( const float2 ds0_, const float sc_)
 {
     //--- using SPLIT(a,s)
@@ -230,6 +264,10 @@ float2 emdp_scale( const float2 ds0_, const float sc_)
     return  _ds;
 }
 
+/**
+ * @brief
+ *
+ */
 double2 emdp_scale(const double2 ds0_, const float sc_)
 {
     precise double cona = ds0_.x * 8193.;
@@ -261,6 +299,11 @@ double2 emdp_scale(const double2 ds0_, const float sc_)
 }
 
 /////////////////////////////////////
+
+/**
+ * @brief
+ *
+ */
 void render_01_ds()
 {
     vec3 color = vec3(0.0, 0.0, 0.0);
@@ -320,7 +363,10 @@ void render_01_ds()
     return;
 }
 
-
+/**
+ * @brief
+ *
+ */
 void render_01_dd()
 {
     vec3 color = vec3(0.0, 0.0, 0.0);
@@ -368,6 +414,10 @@ void render_01_dd()
     return;
 }
 
+/**
+ * @brief
+ * 
+ */
 void render_01_std()
 {
     vec3 _color = vec3(0.0, 0.0, 0.0);
@@ -378,33 +428,27 @@ void render_01_std()
 
     int _iter = 0;
     //-- original version, non-optimize
-    /*
-    {
+    /* {
         while (_iter < u_MaxIter) {
             vec2 _new_z;
             // compute _new_z = |z|^{2} + c
             _new_z.x = (z.x * z.x) - (z.y * z.y) + c.x;
             _new_z.y = 2 * z.x * z.y + c.y;
-
             // compute |_new_z|^{2}
             float _dist = dot(_new_z, _new_z);
-
             if (_dist > 4.0) {
                 // if |_new_z|^{2} > 2^{2}, abort and _color
                 _color = _colorFunc2(_iter, _dist);
                 break;
             }
-
             // assigning for the next iteration
             z = _new_z;
-
             ++_iter;
         }
-    }
-    */
+    } */
 
-
-    //-- slight optimized ver. by reordering instructions, less multiplication. 
+    // slight optimized ver. by reordering instructions, 
+    // and eliminating duplicated calculation of (z.x)^2 and (z.y)^2   
 
     // compute hadamard product z
     vec2 _zoz = vec2(z.x * z.x, z.y * z.y);
@@ -434,6 +478,9 @@ void render_01_std()
 
     return;
 }
+
+
+/////////////////////////////////////
 
 void main()
 {

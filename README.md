@@ -406,3 +406,4 @@ Read more about Julia set on [wiki](https://en.wikipedia.org/wiki/Julia_set) or 
 - *Adaptive Precision Floating-Point Arithmetic and Fast Robust Geometric Predicates*, JR Shewchuk, 1997.
 - *Arbitrary precision real arithmetic: design and algorithms*, Valérie Ménissier-Morain, 2020.
 - [*Smooth coloring of Mandelbrot*](https://blogen.pasithee.fr/2019/01/06/smooth-coloring-of-mandelbrot/)
+- [Interior coordinates in the Mandelbrot set](https://mathr.co.uk/blog/2013-04-01_interior_coordinates_in_the_mandelbrot_set.html)
